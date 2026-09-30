@@ -80,7 +80,12 @@ export function buildReport(options: ReportOptions): jsPDF {
 }
 
 export async function reportLogo(): Promise<string | undefined> {
-  return undefined;
+  try {
+    const response = await fetch('/logo-irmaos-andrade.png');
+    if (!response.ok) return undefined;
+    const blob = await response.blob();
+    return await new Promise<string>((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(String(reader.result)); reader.onerror = reject; reader.readAsDataURL(blob); });
+  } catch { return undefined; }
 }
 
 export async function expenseReport(title: string, expenses: Expense[], drivers: Driver[], subtitle = 'Lançamentos conforme os filtros selecionados') {

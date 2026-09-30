@@ -40,8 +40,8 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, currentUser, on
   return (
     <aside className="app-sidebar h-full w-full flex flex-col">
       <div className="sidebar-brand">
-        <div className="brand-plate generic-brand"><Truck size={34} /><span>FROTA <strong>ERP</strong></span></div>
-        <div className="sidebar-product"><span>GESTÃO DE FROTA</span><span className="product-tag">ERP</span></div>
+        <div className="brand-plate generic-brand"><img src="/logo-irmaos-andrade.png" alt="Grupo Irmãos Andrade" /></div>
+        <div className="sidebar-product"><span>GESTÃO DE FROTA</span><span className="product-tag">ERP GIA</span></div>
       </div>
       <nav className="flex-1 overflow-y-auto px-4 py-6 space-y-1.5 custom-scrollbar" aria-label="Navegação principal">
         <p className="nav-caption">ÁREA DE TRABALHO</p>
@@ -71,7 +71,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, currentUser, on
           <LogOut size={20} />
           <span className="ml-4">Sair do Sistema</span>
         </button>
-        <p className="text-[10px] text-gray-400 text-center mt-4 font-medium uppercase tracking-widest">ERP GIA • Gestão operacional</p>
+        <p className="text-[10px] text-gray-400 text-center mt-4 font-medium uppercase tracking-widest">Grupo Irmãos Andrade • ERP GIA</p>
       </div>
     </aside>
   );

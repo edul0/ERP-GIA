@@ -40,6 +40,8 @@ input[type='checkbox'] { accent-color: #17663c; }
 .executive-dashboard h3 { font-size: 16px; }
 .login-page { min-height: 100dvh; display: flex; align-items: center; justify-content: center; gap: clamp(40px, 7vw, 130px); padding: 48px; background: #f3f6f2; }
 .login-story { background: #0b3322; border-radius: 24px; color: white; padding: clamp(32px, 4vw, 70px); width: 52%; max-width: 760px; min-height: 660px; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; }
+.login-company-logo { width: min(100%, 460px); height: auto; object-fit: contain; object-position: left center; filter: brightness(0) invert(1); opacity: .96; }
+.brand-plate img { width: 100%; max-height: 54px; object-fit: contain; object-position: left center; filter: brightness(0) invert(1); }
 .login-story::after { content: ''; position: absolute; width: 550px; height: 550px; border: 1px solid #b9dcc421; border-radius: 50%; right: -330px; bottom: -270px; box-shadow: 0 0 0 45px #b9dcc408, 0 0 0 90px #b9dcc406, 0 0 0 135px #b9dcc404; pointer-events: none; }
 .login-kicker { font-size: 11px; letter-spacing: .2em; font-weight: 600; color: #b9dcc4; }
 .login-story h1 { font-size: clamp(34px, 3.4vw, 56px); line-height: 1.13; font-weight: 600; letter-spacing: -.045em; margin: 24px 0; }
