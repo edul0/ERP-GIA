@@ -1,0 +1,31 @@
+rules_version = '2';
+service cloud.firestore {
+ match /databases/{database}/documents {
+  function member(account) {
+   return request.auth != null && exists(/databases/$(database)/documents/erp_members/$(request.auth.uid))
+    && get(/databases/$(database)/documents/erp_members/$(request.auth.uid)).data.accountId == account;
+  }
+  function role() { return get(/databases/$(database)/documents/erp_members/$(request.auth.uid)).data.role; }
+  match /erp_members/{uid} {
+   allow get: if request.auth != null && request.auth.uid == uid;
+   allow list, write: if false;
+  }
+  match /fleet_workspaces/{account} {
+   allow read: if member(account);
+   function validPayload() {
+    return request.resource.data.keys().hasOnly(['expenses', 'drivers', 'trucks', 'maintenance', 'trackingData', 'revision'])
+     && request.resource.data.expenses is list && request.resource.data.drivers is list
+     && request.resource.data.trucks is list && request.resource.data.maintenance is list
+     && request.resource.data.trackingData is list && request.resource.data.revision is int;
+   }
+   allow create: if member(account) && role() == 'admin' && validPayload() && request.resource.data.revision == 1;
+   allow update: if member(account) && validPayload() && request.resource.data.revision == resource.data.revision + 1 && (
+    role() == 'admin'
+    || (role() in ['user', 'finance'] && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['expenses', 'drivers', 'revision']))
+    || (role() == 'mechanic' && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['maintenance', 'revision']))
+   );
+   allow delete: if false;
+  }
+  match /{document=**} { allow read, write: if false; }
+ }
+}

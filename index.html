@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ERP GIA | Gestão de Frota</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+    <style>
+      /* Custom scrollbar for a more modern look */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #555;
+      }
+      /* Animation for the save toast notification */
+      @keyframes fadeInOut {
+        0% { opacity: 0; transform: translateY(10px); }
+        15% { opacity: 1; transform: translateY(0); }
+        85% { opacity: 1; transform: translateY(0); }
+        100% { opacity: 0; transform: translateY(10px); }
+      }
+      .animate-fade-in-out {
+        animation: fadeInOut 3s ease-in-out forwards;
+      }
+      
+      /* Hide print-only section by default on screen */
+      .print-only {
+        display: none;
+      }
+
+      /* --- Definitive Print-specific styles for PDF Generation --- */
+      @media print {
+        /* Reset layout constraints to prevent clipping issues */
+        html, body {
+            overflow: visible !important;
+            height: auto !important;
+            background: #fff;
+        }
+
+        /* Target main layout containers and reset their overflow/flex properties */
+        main, main > div, #root > div {
+            overflow: visible !important;
+            height: auto !important;
+            display: block !important;
+            flex: none !important;
+        }
+
+        /* Hide non-essential UI elements like the sidebar and header */
+        aside, header {
+            display: none !important;
+        }
+        
+        body * {
+          visibility: hidden;
+        }
+
+        #printableArea, #printableArea * {
+          visibility: visible;
+        }
+
+        #printableArea {
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 100%;
+          font-family: Georgia, 'Times New Roman', Times, serif;
+          color: #000;
+        }
+
+        /* Hide screen-only elements and show print-only elements */
+        .no-print {
+            display: none !important;
+        }
+        
+        .print-only {
+            display: block !important;
+        }
+
+        .print-container {
+            width: 100%;
+            padding: 0;
+        }
+
+        .print-header h1 {
+            font-size: 24pt;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+        .print-header h2 {
+            font-size: 16pt;
+            text-align: center;
+            color: #555;
+            margin-bottom: 24px;
+            border-bottom: 2px solid #ccc;
+            padding-bottom: 16px;
+        }
+
+        .print-summary {
+            margin-bottom: 32px;
+            padding: 16px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        
+        .print-summary h3 {
+             font-size: 14pt;
+             margin-bottom: 12px;
+             border-bottom: 1px solid #eee;
+             padding-bottom: 8px;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12pt;
+            padding: 4px 0;
+        }
+
+        .print-section-title {
+            font-size: 18pt;
+            margin-top: 32px;
+            margin-bottom: 16px;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 8px;
+        }
+        
+        .print-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10pt;
+            page-break-inside: auto;
+        }
+
+        .print-table th, .print-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .print-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        
+        .print-table tr {
+            page-break-inside: avoid;
+            page-break-after: auto;
+        }
+        
+        .print-table td.currency {
+            text-align: right;
+        }
+
+        .print-footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 9pt;
+            color: #888;
+        }
+        
+        @page {
+            size: A4;
+            margin: 20mm;
+        }
+      }
+    </style>
+
+</head>
+  <body class="bg-gray-50">
+    <div id="root"></div>
+    <script type="module" src="./index.tsx"></script>
+  </body>
+</html>

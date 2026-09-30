@@ -1,0 +1,87 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+:root { font-family: 'Segoe UI', Arial, sans-serif; color: #20392b; background: #f3f6f2; font-synthesis: none; }
+body { margin: 0; }
+button, input, select, textarea { font: inherit; }
+button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
+:focus-visible { outline: 3px solid #5da879; outline-offset: 3px; }
+input[type='checkbox'] { accent-color: #17663c; }
+::selection { background: #b9dcc4; color: #093e25; }
+::-webkit-scrollbar { width: 7px; height: 7px; }
+::-webkit-scrollbar-track { background: #edf2ed; }
+::-webkit-scrollbar-thumb { background: #b3c5b7; border-radius: 8px; }
+::-webkit-scrollbar-thumb:hover { background: #789881; }
+.app-shell { height: 100dvh; }
+.app-sidebar { background: #0b3322; color: #fff; }
+.sidebar-brand { padding: 28px 22px 22px; border-bottom: 1px solid #ffffff16; }
+.brand-plate { padding: 13px 12px; background: #fff; border-radius: 10px; }
+.brand-plate img { width: 100%; height: auto; display: block; }
+.sidebar-product { display: flex; align-items: center; justify-content: space-between; margin-top: 22px; font-size: 19px; letter-spacing: .12em; }
+.sidebar-product strong { font-weight: 400; color: #a9ccb4; }
+.product-tag { font-size: 9px; letter-spacing: .13em; padding: 4px 7px; border: 1px solid #ffffff26; border-radius: 5px; color: #bbd6c4; }
+.nav-caption { color: #96b5a2; letter-spacing: .16em; font-size: 9px; font-weight: 700; padding: 0 16px 13px; }
+.nav-idle { color: #c3d7ca; }
+.nav-idle:hover { color: #fff; background: #ffffff0d; }
+.nav-icon { color: #8caf98; }
+.nav-active { color: #fff; background: #246744; box-shadow: inset 3px 0 #a9d48c; }
+.sidebar-footer { border-top: 1px solid #ffffff16; }
+.sidebar-footer p { color: #a0bcaa; font-size: 8px; }
+.app-shell .app-header { min-height: 80px; box-shadow: none; border-color: #e1e9e1; }
+.app-header h1 { font-size: 16px; font-weight: 600; color: #294735; }
+.app-shell .app-main { background: #f3f6f2; }
+.eyebrow { font-size: 10px; font-weight: 700; color: #17663c; letter-spacing: .18em; margin-bottom: 8px; }
+.executive-dashboard h1 { letter-spacing: -.035em; color: #173f29; }
+.executive-dashboard > .grid > .bg-white { border-color: #e0e9e0; border-radius: 16px; box-shadow: 0 3px 12px #123b2104; }
+.kpi-grid > div { position: relative; overflow: hidden; }
+.kpi-grid > div:first-child { border-top: 3px solid #17663c; }
+.kpi-grid > div:nth-child(2) { background: #e6f1e8; border-color: #c9dece; }
+.kpi-grid p.text-2xl { margin-top: 6px; letter-spacing: -.035em; font-variant-numeric: tabular-nums; }
+.executive-dashboard h3 { font-size: 16px; }
+.login-page { min-height: 100dvh; display: flex; align-items: center; justify-content: center; gap: clamp(40px, 7vw, 130px); padding: 48px; background: #f3f6f2; }
+.login-story { background: #0b3322; border-radius: 24px; color: white; padding: clamp(32px, 4vw, 70px); width: 52%; max-width: 760px; min-height: 660px; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; }
+.login-story::after { content: ''; position: absolute; width: 550px; height: 550px; border: 1px solid #b9dcc421; border-radius: 50%; right: -330px; bottom: -270px; box-shadow: 0 0 0 45px #b9dcc408, 0 0 0 90px #b9dcc406, 0 0 0 135px #b9dcc404; pointer-events: none; }
+.login-kicker { font-size: 11px; letter-spacing: .2em; font-weight: 600; color: #b9dcc4; }
+.login-story h1 { font-size: clamp(34px, 3.4vw, 56px); line-height: 1.13; font-weight: 600; letter-spacing: -.045em; margin: 24px 0; }
+.login-story div > p { max-width: 350px; color: #b9cebf; line-height: 1.8; font-size: 15px; }
+.login-features { display: flex; flex-wrap: wrap; gap: 20px; border-top: 1px solid #ffffff26; padding-top: 24px; font-size: 11px; color: #c3d7ca; }
+.login-page .login-card { box-shadow: none; background: transparent; padding: 28px 12px; }
+.login-logo { width: 280px; max-width: 100%; height: auto; margin: 0 auto 24px; }
+.login-card h2 { color: #173f29; font-size: 26px; letter-spacing: -.035em; }
+.login-card input { border-radius: 10px; border-color: #cbd8ce; background: #fff; min-height: 48px; }
+.login-card button[type='submit'] { min-height: 48px; border-radius: 10px; background: #064b27; }
+.login-card button[type='submit']:hover { background: #093e25; }
+.data-status { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 18px; align-items: center; padding: 10px 14px; border: 1px solid #dce8de; border-radius: 10px; background: #f8fbf8; color: #587263; font-size: 12px; }
+.data-status strong { color: #17663c; }
+.surface { padding: 24px; background: #fff; border: 1px solid #dfe8e0; border-radius: 16px; box-shadow: 0 3px 12px #123b2104; }
+.action-primary, .action-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 42px; padding: 10px 16px; border-radius: 9px; font-size: 14px; font-weight: 600; }
+.action-primary { background: #17663c; color: white; }
+.action-secondary { background: white; border: 1px solid #dfe8e0; color: #294735; }
+.field-label { display: flex; flex-direction: column; gap: 7px; font-size: 12px; font-weight: 600; color: #587263; }
+.field-label input, .field-label select { background: #fff; border: 1px solid #cbd8ce; border-radius: 8px; padding: 10px 12px; min-height: 42px; color: #20392b; font-size: 14px; }
+button:disabled { opacity: .45; cursor: not-allowed; }
+@media (max-width: 1023px) { .login-page { gap: 30px; padding: 24px; } .login-story { min-height: 580px; padding: 30px; } }
+@media (max-width: 767px) { .login-story { display: none; } .login-page { padding: 24px; } .login-page .login-card { padding: 28px 0; } .app-shell .app-header { min-height: 68px; } .app-header h1 { font-size: 14px; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
+@media print { .app-shell .app-main { background: #fff; } .app-shell { height: auto; } }
+@media print {
+  @page { size: A4; margin: 14mm 12mm; }
+  html, body { background: #fff !important; color: #172b20 !important; }
+  aside, header, button, select, input, .no-print, .data-status { display: none !important; }
+  .app-shell, .app-main, main, main > div { display: block !important; height: auto !important; min-height: 0 !important; overflow: visible !important; }
+  .app-main { padding: 0 !important; }
+  #printableArea { display: block !important; position: static !important; width: 100% !important; max-width: none !important; padding: 0 !important; margin: 0 !important; color: #172b20 !important; background: #fff !important; }
+  .print-only { display: block !important; visibility: visible !important; position: static !important; }
+  .print-only * { visibility: visible !important; }
+  .print-container { font-family: Arial, sans-serif; }
+  .print-header { border-bottom: 3px solid #17663c; padding-bottom: 12px; margin-bottom: 18px; }
+  .print-header h1 { color: #0b3322 !important; font-size: 22pt !important; text-align: left !important; margin: 0 0 4px !important; }
+  .print-header h2 { color: #587263 !important; font-size: 10pt !important; text-align: left !important; border: 0 !important; margin: 0 !important; padding: 0 !important; }
+  .print-summary { background: #f0f7f2 !important; border: 1px solid #c9dece !important; border-radius: 6px !important; padding: 12px !important; }
+  .print-section-title { color: #17663c !important; font-size: 13pt !important; border-bottom: 1px solid #b9dcc4 !important; margin-top: 20px !important; }
+  .print-table { font-size: 8.5pt !important; }
+  .print-table th { background: #0b3322 !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .print-table tr:nth-child(even) td { background: #f7faf7 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .print-table tr { page-break-inside: avoid; }
+  .print-footer { border-top: 1px solid #d8e3da; padding-top: 8px; color: #718176 !important; font-size: 8pt !important; }
+}

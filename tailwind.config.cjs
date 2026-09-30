@@ -1,0 +1,1 @@
+module.exports = { content: ['./index.html', './App.tsx', './components/**/*.tsx'], theme: { extend: { colors: { brand: {50:'#f0f7f2',100:'#dceee1',200:'#b9dcc4',300:'#8fc5a0',400:'#5da879',500:'#328451',600:'#17663c',700:'#064b27',800:'#093e25',900:'#0b3322',950:'#061f15'} } } }, plugins: [] };
