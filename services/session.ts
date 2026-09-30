@@ -4,9 +4,9 @@ import { getFirestore, getDoc, doc } from 'firebase/firestore';
 import config from '../firebase-applet-config.json';
 import { roleSchema } from '../lib/data';
 import type { User } from '../types';
-// ERP-GIA uses the existing Frota ERP Firebase workspace. Demo mode is opt-in
-// for local previews, so production builds always read and write the shared base.
-export const isDemo = import.meta.env.VITE_DATA_MODE === 'demo';
+// Keep the existing username/password experience. The shared Firebase base is
+// available when the deployment explicitly sets VITE_DATA_MODE=cloud.
+export const isDemo = import.meta.env.VITE_DATA_MODE !== 'cloud';
 const app = initializeApp(config);
 export const auth = getAuth(app);
 export const db = getFirestore(app, config.firestoreDatabaseId);
@@ -22,14 +22,7 @@ export async function cloudProfile(): Promise<User | null> {
 }
 export async function loginCloud(email: string, password: string): Promise<User> {
  try { await signInWithEmailAndPassword(auth, email.trim(), password); return await cloudProfile(); }
- catch (error) {
-  await signOut(auth);
-  const code = (error as { code?: string })?.code;
-  if (code === 'auth/invalid-credential' || code === 'auth/wrong-password' || code === 'auth/user-not-found') {
-   throw new Error('Acesso recusado. No modo conectado, use o e-mail e a senha de uma conta cadastrada no Firebase.');
-  }
-  throw new Error('Não foi possível conectar ao Firebase. Confira a configuração e a liberação de acesso à empresa.');
- }
+ catch { await signOut(auth); throw new Error('Não foi possível entrar. Confira o usuário, a senha e a liberação de acesso à empresa.'); }
 }
 export async function logout() { sessionStorage.removeItem('frota_demo_session'); if (!isDemo) await signOut(auth); }
 export async function resetPassword(email: string) {
