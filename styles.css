@@ -15,7 +15,7 @@ input[type='checkbox'] { accent-color: #17663c; }
 .app-shell { height: 100dvh; }
 .app-sidebar { background: #0b3322; color: #fff; }
 .sidebar-brand { padding: 28px 22px 22px; border-bottom: 1px solid #ffffff16; }
-.brand-plate { padding: 13px 12px; background: #fff; border-radius: 10px; }
+.brand-plate { padding: 4px 0 10px; background: transparent; border-radius: 0; }
 .brand-plate img { width: 100%; height: auto; display: block; }
 .sidebar-product { display: flex; align-items: center; justify-content: space-between; margin-top: 22px; font-size: 19px; letter-spacing: .12em; }
 .sidebar-product strong { font-weight: 400; color: #a9ccb4; }
