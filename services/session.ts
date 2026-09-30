@@ -4,11 +4,13 @@ import { getFirestore, getDoc, doc } from 'firebase/firestore';
 import config from '../firebase-applet-config.json';
 import { roleSchema } from '../lib/data';
 import type { User } from '../types';
-export const isDemo = import.meta.env.VITE_DATA_MODE !== 'cloud';
+// ERP-GIA uses the existing Frota ERP Firebase workspace. Demo mode is opt-in
+// for local previews, so production builds always read and write the shared base.
+export const isDemo = import.meta.env.VITE_DATA_MODE === 'demo';
 const app = initializeApp(config);
 export const auth = getAuth(app);
 export const db = getFirestore(app, config.firestoreDatabaseId);
-export const accountId = import.meta.env.VITE_ACCOUNT_ID || 'gia_erp_main';
+export const accountId = import.meta.env.VITE_ACCOUNT_ID || 'frotapro_main';
 export async function cloudProfile(): Promise<User | null> {
  await auth.authStateReady();
  if (!auth.currentUser) return null;
