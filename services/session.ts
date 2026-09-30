@@ -22,7 +22,14 @@ export async function cloudProfile(): Promise<User | null> {
 }
 export async function loginCloud(email: string, password: string): Promise<User> {
  try { await signInWithEmailAndPassword(auth, email.trim(), password); return await cloudProfile(); }
- catch { await signOut(auth); throw new Error('Não foi possível entrar. Confira o e-mail, a senha e a liberação de acesso à empresa.'); }
+ catch (error) {
+  await signOut(auth);
+  const code = (error as { code?: string })?.code;
+  if (code === 'auth/invalid-credential' || code === 'auth/wrong-password' || code === 'auth/user-not-found') {
+   throw new Error('Acesso recusado. No modo conectado, use o e-mail e a senha de uma conta cadastrada no Firebase.');
+  }
+  throw new Error('Não foi possível conectar ao Firebase. Confira a configuração e a liberação de acesso à empresa.');
+ }
 }
 export async function logout() { sessionStorage.removeItem('frota_demo_session'); if (!isDemo) await signOut(auth); }
 export async function resetPassword(email: string) {

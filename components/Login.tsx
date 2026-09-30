@@ -97,7 +97,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, busy }) => {
                 <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
                     <div className="space-y-4 rounded-md shadow-sm">
                         <div>
-                            <label htmlFor="username" className="block text-sm font-semibold text-gray-700 mb-2">Usuário</label>
+                        <label htmlFor="username" className="block text-sm font-semibold text-gray-700 mb-2">{isDemo ? 'Usuário' : 'E-mail'}</label>
                             <input
                                 id="username"
                                 name="username"
@@ -107,7 +107,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, busy }) => {
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
                                 className="relative block w-full px-3 py-3 text-gray-900 placeholder-gray-500 border border-gray-300 rounded-md appearance-none focus:outline-none focus:ring-brand-500 focus:border-brand-500 focus:z-10 sm:text-sm"
-                                placeholder={isDemo ? "Usuário" : "E-mail"}
+                                placeholder={isDemo ? "admin" : "nome@empresa.com.br"}
                             />
                         </div>
                         <div>
