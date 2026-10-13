@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Driver, Expense } from '../types';
 import SearchableSelect from './SearchableSelect';
+import SaleSheetFields from './SaleSheetFields';
+import type { SaleSheet } from '../types';
 
 interface ExpenseFormProps {
   formType: 'internal' | 'external';
@@ -48,6 +50,8 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ formType, drivers, onSubmit, 
   });
 
   const isEditing = !!initialData;
+  const [saleSheet, setSaleSheet] = useState<SaleSheet | undefined>(initialData?.saleSheet);
+  useEffect(() => { setSaleSheet(initialData?.saleSheet); }, [initialData]);
 
   useEffect(() => {
     if (isEditing && initialData) {
@@ -91,6 +95,7 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ formType, drivers, onSubmit, 
       destination: formData.destination,
       clientName: formData.clientName,
       invoice: formData.invoice,
+      saleSheet,
       freightValue: parseFloat(formData.freightValue) || 0,
       thirdPartyFreight: parseFloat(formData.thirdPartyFreight) || 0,
       seguro: parseFloat(formData.seguro) || 0,
@@ -139,6 +144,7 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ formType, drivers, onSubmit, 
             <InputField label="Multas (R$)" id="fines" type="number" value={formData.fines} onChange={handleChange} />
             <InputField label="Outras Despesas (R$)" id="others" type="number" value={formData.others} onChange={handleChange} />
         </div>
+        <SaleSheetFields value={saleSheet} date={formData.date} onChange={setSaleSheet} />
         <div className="pt-6 border-t flex justify-end space-x-3">
              <button type="button" onClick={onCancel} className="px-6 py-3 bg-gray-200 text-gray-800 font-bold rounded-lg hover:bg-gray-300 transition-colors">
                 Cancelar

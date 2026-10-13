@@ -1,6 +1,7 @@
 import { jsPDF } from 'jspdf';
 import type { Driver, Expense } from '../types';
 import { currency, displayDate, sumMoney, tripCosts } from './finance';
+import { emptySaleSheet, saleTotals } from './saleSheet';
 
 export interface ReportOptions {
   title: string;
@@ -96,4 +97,17 @@ export async function expenseReport(title: string, expenses: Expense[], drivers:
     columns: ['Data', 'Motorista', 'Placa', 'Destino', 'Receita', 'Despesas', 'Resultado'], widths: [22, 40, 24, 85, 34, 34, 34],
     rows: expenses.map(expense => [displayDate(expense.date), drivers.find(driver => driver.id === expense.driverId)?.name || expense.driverId, expense.licensePlate, expense.destination, currency(expense.freightValue), currency(tripCosts(expense)), currency(Math.round((expense.freightValue - tripCosts(expense)) * 100) / 100)])
   });
+}
+
+export async function saleSheetReport(expense: Partial<Expense>, driverName: string) {
+ const sheet = expense.saleSheet || emptySaleSheet();
+ const totals = saleTotals(sheet);
+ const day = expense.date ? new Date(`${expense.date}T12:00:00`).toLocaleDateString('pt-BR', { weekday: 'long' }) : '';
+ return buildReport({ title: `Ficha de venda ${sheet.saleNumber || ''}`, logo: await reportLogo(),
+  subtitle: `${displayDate(expense.date || '')} (${day}) | Firma: ${sheet.company} | ${sheet.city} / ${sheet.state}\nPrazo: ${sheet.paymentTerms} | Roça: ${sheet.farm} | NF: ${expense.invoice || ''} | Valor NF: ${currency(sheet.invoiceValue)}`,
+  summary: [['Caixas', String(totals.boxes)], ['Produtos', currency(totals.gross)], ['Descontos', currency(totals.discounts)], ['Total a pagar', currency(totals.payable)]],
+  columns: ['Tipo', 'Espécie / descrição', 'Caixas', 'Unitário', 'Total'], widths: [30, 120, 35, 44, 44],
+  rows: [...sheet.products.map(line => ['Produto', line.species, String(line.quantity), currency(line.unitPrice), currency(line.quantity * line.unitPrice)]), ...sheet.discounts.map(line => ['Desconto', line.species, String(line.quantity), currency(line.unitPrice), currency(line.quantity * line.unitPrice)])],
+  note: `Motorista: ${driverName} | Placa: ${expense.licensePlate || ''} | ${sheet.driverCity} / ${sheet.driverState}\nFrete por caixa: ${currency(sheet.freightPerBox)} | Frete contratado: ${currency(expense.freightValue || 0)} | Seguro: ${currency(expense.seguro || 0)} (${sheet.insuranceIncluded ? 'incluído no frete' : 'separado'})\nObservações: ${sheet.notes}`
+ });
 }

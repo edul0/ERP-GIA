@@ -1,3 +1,11 @@
+export interface SaleLine { id: string; species: string; quantity: number; unitPrice: number; }
+export interface SaleSheet {
+  saleNumber: string; company: string; city: string; state: string;
+  paymentTerms: string; farm: string; invoiceValue: number;
+  products: SaleLine[]; discounts: SaleLine[];
+  driverCity: string; driverState: string; freightPerBox: number;
+  insuranceIncluded: boolean; notes: string;
+}
 export interface Expense {
   id: string;
   date: string;
@@ -21,6 +29,7 @@ export interface Expense {
   receiptImage?: string; // Anexo do Comprovante (Base64)
   ciot?: string; // Geração de CIOT
   mdfe?: string; // Geração de MDF-e
+  saleSheet?: SaleSheet;
 }
 
 export interface Driver {
