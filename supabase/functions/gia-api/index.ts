@@ -53,18 +53,12 @@ Deno.serve(async (req: Request) => {
    const owners=await db.from("gia_users").select("id,username").eq("disabled",false).order("username");
    if(owners.error) throw owners.error; return respond(owners.data);
   }
-  let owner=user.id;
-  if(user.role==="admin") {
-   const requested=new URL(req.url).searchParams.get("owner");
-   if(requested) owner=requested;
-   else { const first=await db.from("gia_users").select("id").eq("disabled",false).neq("role","admin").order("username").limit(1);if(first.error)throw first.error;owner=first.data?.[0]?.id||user.id; }
-   const target=await db.from("gia_users").select("id").eq("id",owner).eq("disabled",false).maybeSingle();if(target.error)throw target.error;if(!target.data)return respond({error:"Base não disponível."},403);
-  }
-  const workspaceId="user:"+owner;
+  // A base existente do Marcio passa a ser a base única da empresa, preservando histórico e revisões.
+  const owner="company";
+  const workspaceId="user:u2";
   if(action==="data" && req.method==="GET") {
    const current=await db.from("gia_workspaces").select("*").eq("id",workspaceId).maybeSingle(); if(current.error) throw current.error;
    let data=current.data ? {...current.data.data,revision:current.data.revision} : emptyData();
-   if(!current.data && user.role!=="admin") { const admin=await db.from("gia_workspaces").select("data").eq("id","admin-demo").maybeSingle(); if(admin.error) throw admin.error; data.trucks=admin.data?.data?.trucks||[]; }
    if(user.role==="admin") { const users=await db.from("gia_users").select("id,username,role").eq("disabled",false); if(users.error) throw users.error; data.users=users.data||[]; } else data.users=[];
    return respond({...parseData(data),workspaceOwner:owner});
   }
@@ -97,7 +91,10 @@ Deno.serve(async (req: Request) => {
   }
   if(action==="file" && req.method==="POST") {
    const {path}=await req.json();
-   if(typeof path!=="string" || !path.startsWith(owner+"/") || path.includes("..")) return respond({error:"Anexo não autorizado."},403);
+   if(typeof path!=="string" || path.includes("..")) return respond({error:"Anexo não autorizado."},403);
+   const base=await db.from("gia_workspaces").select("data").eq("id",workspaceId).single();if(base.error)throw base.error;
+   const linked=(base.data.data.expenses||[]).some((record:any)=>(record.attachments||[]).some((attachment:any)=>attachment.path===path));
+   if(!path.startsWith(owner+"/") && !linked) return respond({error:"Anexo não autorizado."},403);
    const result=await db.storage.from("gia-attachments").createSignedUrl(path,300); if(result.error) throw result.error;
    return respond({url:result.data.signedUrl});
   }

@@ -1,5 +1,4 @@
 import { cloudProfile, isDemo, loginCloud, logout } from './services/session';
-import AdminWorkspaceSelector from './components/AdminWorkspaceSelector';
 import { getWorkspaceOwner, setWorkspaceOwner } from './services/online';
 import { emptyData, type UserData } from './lib/data';
 import { normalizeExpense, validateExpense, validateMaintenance } from './lib/validation';
@@ -469,8 +468,7 @@ const App: React.FC = () => {
         
         <main className="app-main flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 bg-gray-50 relative custom-scrollbar flex flex-col">
           <div className="max-w-[1600px] w-full mx-auto flex-1 flex flex-col">
-              <div className="data-status mb-5" role="status"><span>{isDemo ? (currentUser.role === 'admin' ? 'Demonstração do administrador • dados de exemplo' : 'Base local deste usuário • dados salvos neste navegador') : 'Base online • sincronização automática'}</span><strong>{hasUnsavedChanges ? 'Alterações não salvas' : dataReady ? 'Sem alterações pendentes' : 'Carregando'}</strong></div>
-              {!isDemo && currentUser.role === 'admin' && <AdminWorkspaceSelector busy={isLoading} onChange={async owner => { if(hasUnsavedChanges){showToast('Salve as alterações antes de trocar de base.');return;} const previous=getWorkspaceOwner();setIsLoading(true);try{setWorkspaceOwner(owner);applyData(await fetchUserData(currentUser));}catch(error){setWorkspaceOwner(previous);showToast(error instanceof Error ? error.message : 'Não foi possível carregar a base.');}finally{setIsLoading(false);}}}/>}
+              <div className="data-status mb-5" role="status"><span>{isDemo ? (currentUser.role === 'admin' ? 'Demonstração do administrador • dados de exemplo' : 'Base local deste usuário • dados salvos neste navegador') : 'Base da empresa • compartilhada e sincronizada'}</span><strong>{hasUnsavedChanges ? 'Alterações não salvas' : dataReady ? 'Sem alterações pendentes' : 'Carregando'}</strong></div>
               {dataError && dataReady && <div role="alert" className="p-3 mb-4 rounded-lg bg-red-50 text-red-700"><p>{dataError}</p><p className="text-sm">Seus registros continuam na tela. Confira a conexão antes de tentar novamente.</p>{hasUnsavedChanges && <button onClick={handleSaveData} disabled={isLoading} className="underline mt-2">Tentar salvar novamente</button>}</div>}
             <ErrorBoundary hasUnsavedChanges={hasUnsavedChanges}>
               <Suspense fallback={<div className="surface">Carregando área...</div>}>{renderView()}</Suspense>
