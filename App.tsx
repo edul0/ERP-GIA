@@ -20,6 +20,7 @@ const DRE = lazy(() => import('./components/DRE').then(module => ({ default: mod
 import { APIProvider } from '@vis.gl/react-google-maps';
 import { SaveIcon } from './components/icons/SaveIcon';
 import { fetchUserData, saveUserData } from './services/firebaseService';
+import InstallApp from './components/InstallApp';
 
 const VIEW_ROLES: Record<View, Role[]> = {
  'data-management': ['admin','user','finance'], dashboard: ['admin', 'user', 'finance', 'viewer'], dre: ['admin', 'finance'],
@@ -151,8 +152,8 @@ const App: React.FC = () => {
   }, [currentUser, expenses, drivers, users, trucks, maintenance, trackingData, revision, snapshot, dataReady, showToast]);
 
   useEffect(() => {
-    if (isDemo || !currentUser || currentUser.role === 'viewer' || !hasUnsavedChanges || isLoading || dataError) return;
-    const timeout = window.setTimeout(() => { void handleSaveData(); }, 1200);
+    if (isDemo || !currentUser || currentUser.role === 'viewer' || !hasUnsavedChanges || isLoading) return;
+    const timeout = window.setTimeout(() => { if(navigator.onLine) void handleSaveData(); }, dataError ? 30000 : 1200);
     return () => window.clearTimeout(timeout);
   }, [currentUser, hasUnsavedChanges, snapshot, isLoading, dataError, handleSaveData]);
   const syncState = useRef({ dirty: hasUnsavedChanges, loading: isLoading, revision });
@@ -440,6 +441,7 @@ const App: React.FC = () => {
           </div>
           
           <div className="flex items-center gap-2 md:gap-4">
+            <InstallApp />
             {currentUser.role !== 'viewer' && (
               <button
                 onClick={handleSaveData}
