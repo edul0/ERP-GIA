@@ -3,7 +3,10 @@ const base = (import.meta.env.VITE_GIA_API_URL || 'https://ghnhunsbdgbcchycxjsn.
 const key = 'gia_online_session';
 export const onlineEnabled = import.meta.env.VITE_DATA_MODE !== 'demo';
 export async function onlineRequest<T>(action: string, options: RequestInit = {}): Promise<T> {
- const response = await fetch(`${base}/${action}`, { ...options, headers: { ...(options.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }), Authorization: `Bearer ${sessionStorage.getItem(key) || ''}`, ...options.headers } });
+ let response: Response;
+ try {
+  response = await fetch(`${base}/${action}`, { ...options, signal: options.signal || AbortSignal.timeout(30000), headers: { ...(options.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }), Authorization: `Bearer ${sessionStorage.getItem(key) || ''}`, ...options.headers } });
+ } catch { throw new Error('Sem conexão com o banco online. As alterações continuam neste preenchimento.'); }
  const data = await response.json();
  if (!response.ok) throw new Error(data.error || 'Não foi possível conectar ao banco online.');
  return data;

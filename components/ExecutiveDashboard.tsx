@@ -1,4 +1,5 @@
 import { expenseReport } from '../lib/report';
+import ManagementOverview from './ManagementOverview';
 import { currency, displayDate, localDateKey, monthlyTotals, sumMoney, tripCosts } from '../lib/finance';
 import React, { useState, useRef } from 'react';
 import { Expense, Driver, Truck, MaintenanceRecord } from '../types';
@@ -86,6 +87,7 @@ export const ExecutiveDashboard: React.FC<DashboardProps> = ({ expenses, drivers
 
   return (
     <div ref={dashboardRef} className="executive-dashboard space-y-6 sm:space-y-8 animate-in fade-in duration-500 pb-10">
+      <ManagementOverview expenses={expenses} drivers={drivers} />
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 flex-wrap relative">
         <div><p className="eyebrow">GESTÃO DE FROTA</p><h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Visão geral da operação</h1><p className="mt-2 text-sm text-gray-500">Receitas e despesas registradas. Resultado antes de tributos e manutenção.</p></div>
         <div className="flex flex-wrap gap-2 w-full sm:w-auto relative" data-html2canvas-ignore="true">

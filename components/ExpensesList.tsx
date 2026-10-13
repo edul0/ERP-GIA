@@ -78,6 +78,10 @@ export const ExpensesList: React.FC<ExpensesListProps> = ({
         exp.licensePlate.toLowerCase().includes(query) || 
         (exp.invoice || '').toLowerCase().includes(query) || 
         (exp.clientName || '').toLowerCase().includes(query) ||
+        (exp.saleSheet?.company || '').toLowerCase().includes(query) ||
+        (exp.saleSheet?.saleNumber || '').toLowerCase().includes(query) ||
+        (exp.saleSheet?.farm || '').toLowerCase().includes(query) ||
+        (exp.saleSheet?.products || []).some(line => line.species.toLowerCase().includes(query)) ||
         (exp.destination || '').toLowerCase().includes(query) ||
         driverName.toLowerCase().includes(query);
       

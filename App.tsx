@@ -180,7 +180,10 @@ const App: React.FC = () => {
       const before = syncState.current.revision;
       try {
         const data = await fetchUserData(currentUser);
-        if (active && !syncState.current.dirty && !syncState.current.loading && syncState.current.revision === before && data.revision !== before) applyData(data);
+        if (active && !syncState.current.dirty && !syncState.current.loading && syncState.current.revision === before) {
+          if (data.revision !== before) applyData(data);
+          else setDataError('');
+        }
       } catch (error) { if (active) setDataError(error instanceof Error ? error.message : 'Não foi possível sincronizar.'); }
     }, 15000);
     return () => { active = false; window.clearInterval(interval); };
@@ -369,7 +372,7 @@ const App: React.FC = () => {
         );
     }
 
-    if (dataError) return <div role="alert" className="surface text-red-700">{dataError}</div>;
+    if (dataError && !dataReady) return <div role="alert" className="surface text-red-700">{dataError}</div>;
     if (!dataReady) return <p>Carregando a base...</p>;
     if (!currentUser || !VIEW_ROLES[view]?.includes(currentUser.role)) return <div className="surface">Seu perfil não tem acesso a esta área.</div>;
     switch (view) {
@@ -507,6 +510,7 @@ const App: React.FC = () => {
           <div className="max-w-[1600px] w-full mx-auto flex-1 flex flex-col">
             <ErrorBoundary>
               <div className="data-status mb-5" role="status"><span>{isDemo ? (currentUser.role === 'admin' ? 'Demonstração do administrador • dados de exemplo' : 'Base local deste usuário • dados salvos neste navegador') : 'Base online • sincronização automática'}</span><strong>{hasUnsavedChanges ? 'Alterações não salvas' : dataReady ? 'Sem alterações pendentes' : 'Carregando'}</strong></div>
+              {dataError && dataReady && <div role="alert" className="p-3 mb-4 rounded-lg bg-red-50 text-red-700"><p>{dataError}</p><p className="text-sm">Seus registros continuam na tela. Confira a conexão antes de tentar novamente.</p>{hasUnsavedChanges && <button onClick={handleSaveData} disabled={isLoading} className="underline mt-2">Tentar salvar novamente</button>}</div>}
               {!isDemo && currentUser.role !== 'viewer' && <button className="text-sm text-brand-700 underline mb-4" onClick={importBrowserData}>Importar base antiga deste navegador</button>}
               <Suspense fallback={<div className="surface">Carregando área...</div>}>{renderView()}</Suspense>
             </ErrorBoundary>
