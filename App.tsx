@@ -1,6 +1,5 @@
 import { cloudProfile, isDemo, loginCloud, logout } from './services/session';
-import { emptyData, parseData, type UserData } from './lib/data';
-import { workspaceKey } from './lib/localData';
+import { emptyData, type UserData } from './lib/data';
 import { normalizeExpense, validateExpense, validateMaintenance } from './lib/validation';
 import React, { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
 import { Expense, Driver, View, User, Role, Truck, MaintenanceRecord } from './types';
@@ -222,19 +221,6 @@ const App: React.FC = () => {
   const handleLogout = async () => {
       if (hasUnsavedChanges && !window.confirm('Há alterações não salvas. Deseja sair e descartá-las?')) return;
       await logout(); setCurrentUser(null); applyData(emptyData()); setDataReady(false);
-  };
-  const importBrowserData = () => {
-    if (!currentUser || currentUser.role === 'viewer') return;
-    const stored = localStorage.getItem(workspaceKey(currentUser));
-    if (!stored) { showToast('Não há uma base anterior salva neste navegador.'); return; }
-    if (!window.confirm('Importar os registros salvos neste navegador? Registros com o mesmo identificador serão atualizados com a versão local.')) return;
-    try {
-      const local = parseData(JSON.parse(stored));
-      const merge = <T extends { id: string },>(remote: T[], saved: T[]) => [...new Map([...remote, ...saved].map(item => [item.id, item])).values()];
-      setExpenses(merge(expenses, local.expenses)); setDrivers(merge(drivers, local.drivers));
-      setTrucks(merge(trucks, local.trucks)); setMaintenance(merge(maintenance, local.maintenance));
-      setDataError(''); showToast('Base local importada. Aguarde a confirmação do salvamento online.');
-    } catch (error) { showToast(error instanceof Error ? error.message : 'Base local inválida.'); }
   };
   const assertEdit = (roles: Role[]) => {
     if (!currentUser || !roles.includes(currentUser.role)) throw new Error('Seu perfil não permite esta alteração.');
@@ -511,7 +497,6 @@ const App: React.FC = () => {
             <ErrorBoundary>
               <div className="data-status mb-5" role="status"><span>{isDemo ? (currentUser.role === 'admin' ? 'Demonstração do administrador • dados de exemplo' : 'Base local deste usuário • dados salvos neste navegador') : 'Base online • sincronização automática'}</span><strong>{hasUnsavedChanges ? 'Alterações não salvas' : dataReady ? 'Sem alterações pendentes' : 'Carregando'}</strong></div>
               {dataError && dataReady && <div role="alert" className="p-3 mb-4 rounded-lg bg-red-50 text-red-700"><p>{dataError}</p><p className="text-sm">Seus registros continuam na tela. Confira a conexão antes de tentar novamente.</p>{hasUnsavedChanges && <button onClick={handleSaveData} disabled={isLoading} className="underline mt-2">Tentar salvar novamente</button>}</div>}
-              {!isDemo && currentUser.role !== 'viewer' && <button className="text-sm text-brand-700 underline mb-4" onClick={importBrowserData}>Importar base antiga deste navegador</button>}
               <Suspense fallback={<div className="surface">Carregando área...</div>}>{renderView()}</Suspense>
             </ErrorBoundary>
           </div>
