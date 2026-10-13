@@ -1,5 +1,6 @@
 import { localDateKey } from '../lib/finance';
 import SaleSheetFields from './SaleSheetFields';
+import AttachmentFields from './AttachmentFields';
 import { saleSheetReport } from '../lib/report';
 import React, { useState, useEffect, useRef } from 'react';
 import { Expense, Driver } from '../types';
@@ -18,6 +19,7 @@ interface ExpensesModalProps {
 
 export const ExpensesModal: React.FC<ExpensesModalProps> = ({ isOpen, type, isAdmin, drivers, expense, onClose, onSave }) => {
   const [formError, setFormError] = useState('');
+  const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState<Partial<Expense>>({
     date: localDateKey(),
     driverId: drivers[0]?.id || '',
@@ -355,10 +357,11 @@ export const ExpensesModal: React.FC<ExpensesModalProps> = ({ isOpen, type, isAd
           </div>
 
           <SaleSheetFields value={formData.saleSheet} date={formData.date} onChange={saleSheet => setFormData(previous => ({ ...previous, saleSheet }))} />
+          <AttachmentFields value={formData.attachments} onBusy={setUploading} onChange={attachments => setFormData(previous => ({...previous,attachments}))} />
           <div className="pt-4 border-t flex justify-end gap-3">
              <button type="button" className="px-4 py-2 text-brand-700 font-bold" onClick={async () => { try { const pdf = await saleSheetReport(formData, drivers.find(driver => driver.id === formData.driverId)?.name || ''); pdf.save('ficha-venda.pdf'); } catch { setFormError('Não foi possível gerar a ficha para impressão.'); } }}>Imprimir ficha</button>
              <button type="button" onClick={onClose} className="px-4 py-2 text-gray-600 font-bold hover:bg-gray-100 rounded-lg">Cancelar</button>
-             <button type="submit" className="px-6 py-2 bg-brand-600 text-white font-bold rounded-lg shadow-md hover:bg-brand-700">Salvar Dados</button>
+             <button type="submit" disabled={uploading} className="px-6 py-2 bg-brand-600 text-white font-bold rounded-lg shadow-md hover:bg-brand-700 disabled:opacity-50">{uploading ? 'Enviando anexo…' : 'Salvar Dados'}</button>
           </div>
         </form>
       </div>

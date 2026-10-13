@@ -8,6 +8,7 @@ const ExecutiveDashboard = lazy(() => import('./components/ExecutiveDashboard').
 const ExpensesList = lazy(() => import('./components/ExpensesList').then(module => ({ default: module.ExpensesList })));
 import Login from './components/Login';
 const UserManagement = lazy(() => import('./components/UserManagement'));
+const OnlineUserManagement = lazy(() => import('./components/OnlineUserManagement'));
 const DriverManagement = lazy(() => import('./components/DriverManagement'));
 const AdvancedReports = lazy(() => import('./components/AdvancedReports'));
 const TrackingMap = lazy(() => import('./components/TrackingMap'));
@@ -150,16 +151,38 @@ const App: React.FC = () => {
         if (!dataReady) throw new Error('A base não foi carregada. Salvamento bloqueado.');
         if (currentUser.role === 'viewer') throw new Error('Seu perfil permite apenas consulta.');
         const nextRevision = await saveUserData({ expenses, drivers, users, trucks, maintenance, trackingData, revision }, currentUser);
-        setRevision(nextRevision); setSavedSnapshot(snapshot);
+        setRevision(nextRevision); setSavedSnapshot(snapshot); setDataError('');
         showToast(isDemo ? 'Dados salvos neste navegador.' : 'Dados confirmados na nuvem.');
     } catch (error) {
         console.error("Failed to save data to cloud:", error);
-        showToast(error instanceof Error ? error.message : 'Falha ao salvar. As alterações continuam na tela.', 10000);
+        const message = error instanceof Error ? error.message : 'Falha ao salvar. As alterações continuam na tela.';
+        setDataError(message); showToast(message, 10000);
     } finally {
         setIsLoading(false);
         setLoadingMessage('');
     }
   }, [currentUser, expenses, drivers, users, trucks, maintenance, trackingData, revision, snapshot, dataReady, showToast]);
+
+  useEffect(() => {
+    if (isDemo || !currentUser || currentUser.role === 'viewer' || !hasUnsavedChanges || isLoading || dataError) return;
+    const timeout = window.setTimeout(() => { void handleSaveData(); }, 1200);
+    return () => window.clearTimeout(timeout);
+  }, [currentUser, hasUnsavedChanges, snapshot, isLoading, dataError, handleSaveData]);
+  const syncState = useRef({ dirty: hasUnsavedChanges, loading: isLoading, revision });
+  syncState.current = { dirty: hasUnsavedChanges, loading: isLoading, revision };
+  useEffect(() => {
+    if (isDemo || !currentUser) return;
+    let active = true;
+    const interval = window.setInterval(async () => {
+      if (syncState.current.dirty || syncState.current.loading) return;
+      const before = syncState.current.revision;
+      try {
+        const data = await fetchUserData(currentUser);
+        if (active && !syncState.current.dirty && !syncState.current.loading && syncState.current.revision === before && data.revision !== before) applyData(data);
+      } catch (error) { if (active) setDataError(error instanceof Error ? error.message : 'Não foi possível sincronizar.'); }
+    }, 15000);
+    return () => { active = false; window.clearInterval(interval); };
+  }, [currentUser]);
 
   const handleSetView = useCallback((newView: View) => {
     if (!currentUser || !VIEW_ROLES[newView]?.includes(currentUser.role)) { showToast('Seu perfil não tem acesso a esta área.'); return; }
@@ -358,7 +381,7 @@ const App: React.FC = () => {
            onLinkExpense={handleLinkExpense}
         />;
       case 'user-management':
-        if (!isDemo) return <div className="surface"><h2 className="text-xl font-bold">Acessos da empresa</h2><p className="mt-3 text-gray-600">As contas reais são gerenciadas pelo administrador no Firebase Authentication. Permissões são vinculadas à empresa; senhas não são armazenadas nos dados da frota.</p></div>;
+        if (!isDemo) return <OnlineUserManagement initialUsers={users} currentUser={currentUser} />;
         if (currentUser?.role === 'admin') return <UserManagement 
             users={users} 
             onAddUser={addUser} 

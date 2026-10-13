@@ -1,0 +1,3 @@
+[functions.gia-api]
+# The function validates opaque session tokens stored hashed in gia_sessions.
+verify_jwt = false

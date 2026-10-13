@@ -11,6 +11,7 @@ const expenseSchema = z.object({
  invoice: z.string().default(''), fueling: number.default(0), toll: number.default(0), seguro: number.default(0), thirdPartyFreight: number.default(0), driverExpenses: number.default(0),
  loadingUnloading: number.default(0), fines: number.default(0), others: number.default(0), entryOdometer: number.default(0), exitOdometer: number.default(0),
  clientName: z.string().optional(), receiptImage: z.string().optional(), ciot: z.string().optional(), mdfe: z.string().optional(),
+ attachments: z.array(z.object({ id: text, name: text, path: text, mimeType: text, size: number })).optional(),
  saleSheet: z.object({
   saleNumber: z.string(), company: z.string(), city: z.string(), state: z.string(), paymentTerms: z.string(), farm: z.string(), invoiceValue: number,
   products: z.array(z.object({ id: text, species: z.string(), quantity: number, unitPrice: number })),

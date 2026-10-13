@@ -6,6 +6,7 @@ export interface SaleSheet {
   driverCity: string; driverState: string; freightPerBox: number;
   insuranceIncluded: boolean; notes: string;
 }
+export interface Attachment { id: string; name: string; path: string; mimeType: string; size: number; }
 export interface Expense {
   id: string;
   date: string;
@@ -30,6 +31,7 @@ export interface Expense {
   ciot?: string; // Geração de CIOT
   mdfe?: string; // Geração de MDF-e
   saleSheet?: SaleSheet;
+  attachments?: Attachment[];
 }
 
 export interface Driver {
