@@ -4,19 +4,24 @@ import { costFields, validDate } from './finance.ts';
 export function validateExpense(expense: Partial<Expense>, drivers?: Driver[]): string | null {
   if (!validDate(expense.date)) return 'Informe uma data válida.';
   if (!expense.driverId || (drivers && !drivers.some(driver => driver.id === expense.driverId))) return 'Selecione um motorista cadastrado.';
-  if (!expense.licensePlate?.trim() || !expense.destination?.trim()) return 'Preencha a placa e o destino.';
+  if (!expense.licensePlate?.trim()) return 'Preencha a placa.';
+  if (!expense.saleSheet && !expense.destination?.trim()) return 'Preencha o destino.';
   if (!['internal', 'external'].includes(expense.type)) return 'Tipo de frota inválido.';
   for (const key of ['freightValue', ...costFields, 'entryOdometer', 'exitOdometer'] as const) {
     const value = expense[key];
     if (value !== undefined && (typeof value !== 'number' || !Number.isFinite(value) || value < 0)) return 'Valores e hodômetros devem ser números positivos ou zero.';
   }
   if (typeof expense.freightValue !== 'number') return 'Informe o valor do frete.';
+  if (expense.saleSheet) {
+    const sheet = expense.saleSheet;
+    if (![sheet.invoiceValue, sheet.freightPerBox, ...sheet.products.flatMap(line => [line.quantity, line.unitPrice]), ...sheet.discounts.flatMap(line => [line.quantity, line.unitPrice])].every(value => typeof value === 'number' && Number.isFinite(value) && value >= 0)) return 'Confira quantidades e valores da ficha: use números positivos ou zero.';
+  }
   if ((expense.exitOdometer ?? 0) < (expense.entryOdometer ?? 0)) return 'O hodômetro final não pode ser menor que o inicial.';
   return null;
 }
 export function normalizeExpense(expense: Partial<Expense>): Expense {
   return { ...Object.fromEntries([...costFields, 'entryOdometer', 'exitOdometer'].map(key => [key, expense[key] ?? 0])), ...expense,
-    licensePlate: expense.licensePlate.trim().toUpperCase(), destination: expense.destination.trim(), invoice: expense.invoice ?? '' } as Expense;
+    licensePlate: expense.licensePlate.trim().toUpperCase(), destination: (expense.destination ?? '').trim(), invoice: expense.invoice ?? '' } as Expense;
 }
 export function validateMaintenance(record: Partial<MaintenanceRecord>, trucks: Truck[]): string | null {
   if (!trucks.some(truck => truck.id === record.truckId)) return 'Selecione um veículo cadastrado.';

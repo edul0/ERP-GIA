@@ -7,7 +7,7 @@ const date = z.string().refine(validDate, 'Data inválida');
 const text = z.string().trim().min(1);
 export const roleSchema = z.enum(['admin', 'user', 'finance', 'viewer', 'mechanic']);
 const expenseSchema = z.object({
- id: text, date, driverId: text, licensePlate: text, destination: text, type: z.enum(['internal', 'external']), freightValue: number,
+ id: text, date, driverId: text, licensePlate: text, destination: z.string(), type: z.enum(['internal', 'external']), freightValue: number,
  invoice: z.string().default(''), fueling: number.default(0), toll: number.default(0), seguro: number.default(0), thirdPartyFreight: number.default(0), driverExpenses: number.default(0),
  loadingUnloading: number.default(0), fines: number.default(0), others: number.default(0), entryOdometer: number.default(0), exitOdometer: number.default(0),
  clientName: z.string().optional(), receiptImage: z.string().optional(), ciot: z.string().optional(), mdfe: z.string().optional(),
