@@ -13,6 +13,8 @@ const expenseSchema = z.object({
  clientName: z.string().optional(), receiptImage: z.string().optional(), ciot: z.string().optional(), mdfe: z.string().optional(),
  attachments: z.array(z.object({ id: text, name: text, path: text, mimeType: text, size: number })).optional(),
  saleSheet: z.object({
+  totalBoxes: number.optional(),
+  brokenBoxes: number.optional(),
   saleNumber: z.string(), company: z.string(), city: z.string(), state: z.string(), paymentTerms: z.string(), farm: z.string(), invoiceValue: number,
   products: z.array(z.object({ id: text, species: z.string(), quantity: number, unitPrice: number })),
   discounts: z.array(z.object({ id: text, species: z.string(), quantity: number, unitPrice: number })),

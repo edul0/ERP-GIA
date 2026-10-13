@@ -1,4 +1,6 @@
 import { cloudProfile, isDemo, loginCloud, logout } from './services/session';
+import AdminWorkspaceSelector from './components/AdminWorkspaceSelector';
+import { getWorkspaceOwner, setWorkspaceOwner } from './services/online';
 import { emptyData, type UserData } from './lib/data';
 import { normalizeExpense, validateExpense, validateMaintenance } from './lib/validation';
 import React, { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
@@ -177,9 +179,10 @@ const App: React.FC = () => {
     const interval = window.setInterval(async () => {
       if (syncState.current.dirty || syncState.current.loading) return;
       const before = syncState.current.revision;
+      const ownerBefore = getWorkspaceOwner();
       try {
         const data = await fetchUserData(currentUser);
-        if (active && !syncState.current.dirty && !syncState.current.loading && syncState.current.revision === before) {
+        if (active && getWorkspaceOwner() === ownerBefore && !syncState.current.dirty && !syncState.current.loading && syncState.current.revision === before) {
           if (data.revision !== before) applyData(data);
           else setDataError('');
         }
@@ -372,7 +375,7 @@ const App: React.FC = () => {
       case 'motorista-externo':
         return <ExpensesList type="external" isAdmin={currentUser?.role === 'admin'} expenses={expenses.filter(e => e.type === 'external')} drivers={drivers} trucks={trucks} onAddExpense={addExpense} onUpdateExpense={updateExpense} onDeleteExpense={deleteExpense} onImportExpenses={addExpensesBatch} showToast={showToast} onBulkUpdate={handleBulkUpdateExpenses} />;
       case 'maintenance':
-        return <Maintenance maintenance={maintenance} trucks={trucks} onAddMaintenance={(m) => (() => { assertEdit(['admin', 'mechanic']); const issue = validateMaintenance(m, trucks); if (issue) throw new Error(issue); setMaintenance(prev => [{id: crypto.randomUUID(), ...m} as MaintenanceRecord, ...prev]); })()} onUpdateMaintenance={(m) => (() => { assertEdit(['admin', 'mechanic']); const issue = validateMaintenance(m, trucks); if (issue) throw new Error(issue); setMaintenance(prev => prev.map(record => record.id === m.id ? m : record)); })()} onDeleteMaintenance={(id) => setMaintenance(prev => prev.filter(record => record.id !== id))} />;
+        return <Maintenance maintenance={maintenance} trucks={trucks} onAddMaintenance={(m) => (() => { if (!['admin','mechanic'].includes(currentUser.role) && currentUser.username.toLowerCase() !== 'marcio') throw new Error('Seu perfil não permite registrar manutenção.'); const issue = validateMaintenance(m, trucks); if (issue) throw new Error(issue); setMaintenance(prev => [{id: crypto.randomUUID(), ...m} as MaintenanceRecord, ...prev]); })()} onUpdateMaintenance={(m) => (() => { if (!['admin','mechanic'].includes(currentUser.role) && currentUser.username.toLowerCase() !== 'marcio') throw new Error('Seu perfil não permite registrar manutenção.'); const issue = validateMaintenance(m, trucks); if (issue) throw new Error(issue); setMaintenance(prev => prev.map(record => record.id === m.id ? m : record)); })()} onDeleteMaintenance={(id) => setMaintenance(prev => prev.filter(record => record.id !== id))} />;
       case 'driver-management':
         return <DriverManagement drivers={drivers} onAddDriver={addDriver} onDeleteDriver={deleteDriver} />;
       case 'advanced-reports':
@@ -496,6 +499,7 @@ const App: React.FC = () => {
           <div className="max-w-[1600px] w-full mx-auto flex-1 flex flex-col">
             <ErrorBoundary>
               <div className="data-status mb-5" role="status"><span>{isDemo ? (currentUser.role === 'admin' ? 'Demonstração do administrador • dados de exemplo' : 'Base local deste usuário • dados salvos neste navegador') : 'Base online • sincronização automática'}</span><strong>{hasUnsavedChanges ? 'Alterações não salvas' : dataReady ? 'Sem alterações pendentes' : 'Carregando'}</strong></div>
+              {!isDemo && currentUser.role === 'admin' && <AdminWorkspaceSelector busy={isLoading} onChange={async owner => { if(hasUnsavedChanges){showToast('Salve as alterações antes de trocar de base.');return;} const previous=getWorkspaceOwner();setIsLoading(true);try{setWorkspaceOwner(owner);applyData(await fetchUserData(currentUser));}catch(error){setWorkspaceOwner(previous);showToast(error instanceof Error ? error.message : 'Não foi possível carregar a base.');}finally{setIsLoading(false);}}}/>}
               {dataError && dataReady && <div role="alert" className="p-3 mb-4 rounded-lg bg-red-50 text-red-700"><p>{dataError}</p><p className="text-sm">Seus registros continuam na tela. Confira a conexão antes de tentar novamente.</p>{hasUnsavedChanges && <button onClick={handleSaveData} disabled={isLoading} className="underline mt-2">Tentar salvar novamente</button>}</div>}
               <Suspense fallback={<div className="surface">Carregando área...</div>}>{renderView()}</Suspense>
             </ErrorBoundary>

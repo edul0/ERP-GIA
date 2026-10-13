@@ -105,9 +105,9 @@ export async function saleSheetReport(expense: Partial<Expense>, driverName: str
  const day = expense.date ? new Date(`${expense.date}T12:00:00`).toLocaleDateString('pt-BR', { weekday: 'long' }) : '';
  return buildReport({ title: `Ficha de venda ${sheet.saleNumber || ''}`, logo: await reportLogo(),
   subtitle: `${displayDate(expense.date || '')} (${day}) | Firma: ${sheet.company} | ${sheet.city} / ${sheet.state}\nPrazo: ${sheet.paymentTerms} | Roça: ${sheet.farm} | NF: ${expense.invoice || ''} | Valor NF: ${currency(sheet.invoiceValue)}`,
-  summary: [['Caixas', String(totals.boxes)], ['Produtos', currency(totals.gross)], ['Descontos', currency(totals.discounts)], ['Total a pagar', currency(totals.payable)]],
-  columns: ['Tipo', 'Espécie / descrição', 'Caixas', 'Unitário', 'Total'], widths: [30, 120, 35, 44, 44],
-  rows: [...sheet.products.map(line => ['Produto', line.species, String(line.quantity), currency(line.unitPrice), currency(line.quantity * line.unitPrice)]), ...sheet.discounts.map(line => ['Desconto', line.species, String(line.quantity), currency(line.unitPrice), currency(line.quantity * line.unitPrice)])],
+  summary: [['Quantidade total de caixas', String(totals.boxes)], ['Valor da NF', currency(sheet.invoiceValue)]],
+  columns: ['Descrição', 'Quantidade de caixas'], widths: [210, 63],
+  rows: [['Total de caixas', String(totals.boxes)], ['Quebra', String(sheet.brokenBoxes ?? sheet.discounts.reduce((sum,line) => sum + line.quantity, 0))]],
   note: `Motorista: ${driverName} | Placa: ${expense.licensePlate || ''} | ${sheet.driverCity} / ${sheet.driverState}\nFrete por caixa: ${currency(sheet.freightPerBox)} | Frete contratado: ${currency(expense.freightValue || 0)} | Seguro: ${currency(expense.seguro || 0)} (${sheet.insuranceIncluded ? 'incluído no frete' : 'separado'})\nObservações: ${sheet.notes}`
  });
 }

@@ -11,7 +11,7 @@ interface ExpensesModalProps {
  drivers: Driver[]; expense: Expense | null; onClose: () => void; onSave: (data: Partial<Expense>) => void;
 }
 export const ExpensesModal: React.FC<ExpensesModalProps> = ({isOpen,type,drivers,trucks=[],expense,onClose,onSave}) => {
- const blankSheet = () => ({...emptySaleSheet(), products:Array.from({length:4},()=>({id:crypto.randomUUID(),species:'',quantity:0,unitPrice:0})),discounts:[{id:crypto.randomUUID(),species:'Quebra',quantity:0,unitPrice:0}]});
+ const blankSheet = () => ({...emptySaleSheet(), products:[],totalBoxes:0,discounts:[{id:crypto.randomUUID(),species:'Quebra',quantity:0,unitPrice:0}]});
  const initial = (): Partial<Expense> => expense ? {...expense, saleSheet: expense.saleSheet || emptySaleSheet()} : {
   date:localDateKey(), driverId:drivers[0]?.id || '', licensePlate:'', invoice:'', freightValue:0, seguro:0,
   destination:'', type, thirdPartyFreight:0, fueling:0, entryOdometer:0, exitOdometer:0, driverExpenses:0, toll:0, saleSheet:blankSheet()

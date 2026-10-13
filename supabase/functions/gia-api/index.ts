@@ -47,13 +47,25 @@ Deno.serve(async (req: Request) => {
    if(result.error) throw result.error;
    return respond({ok:true});
   }
-  const workspaceId=user.role==="admin" ? "admin-demo" : "user:"+user.id;
+  if(action==="workspaces" && req.method==="GET") {
+   if(user.role!=="admin") return respond({error:"Acesso restrito."},403);
+   const owners=await db.from("gia_users").select("id,username").eq("disabled",false).order("username");
+   if(owners.error) throw owners.error; return respond(owners.data);
+  }
+  let owner=user.id;
+  if(user.role==="admin") {
+   const requested=new URL(req.url).searchParams.get("owner");
+   if(requested) owner=requested;
+   else { const first=await db.from("gia_users").select("id").eq("disabled",false).neq("role","admin").order("username").limit(1);if(first.error)throw first.error;owner=first.data?.[0]?.id||user.id; }
+   const target=await db.from("gia_users").select("id").eq("id",owner).eq("disabled",false).maybeSingle();if(target.error)throw target.error;if(!target.data)return respond({error:"Base não disponível."},403);
+  }
+  const workspaceId="user:"+owner;
   if(action==="data" && req.method==="GET") {
    const current=await db.from("gia_workspaces").select("*").eq("id",workspaceId).maybeSingle(); if(current.error) throw current.error;
    let data=current.data ? {...current.data.data,revision:current.data.revision} : emptyData();
    if(!current.data && user.role!=="admin") { const admin=await db.from("gia_workspaces").select("data").eq("id","admin-demo").maybeSingle(); if(admin.error) throw admin.error; data.trucks=admin.data?.data?.trucks||[]; }
    if(user.role==="admin") { const users=await db.from("gia_users").select("id,username,role").eq("disabled",false); if(users.error) throw users.error; data.users=users.data||[]; } else data.users=[];
-   return respond(parseData(data));
+   return respond({...parseData(data),workspaceOwner:owner});
   }
   if(action==="data" && req.method==="PUT") {
    if(user.role==="viewer") return respond({error:"Seu perfil permite apenas consulta."},403);
@@ -78,13 +90,13 @@ Deno.serve(async (req: Request) => {
    const form=await req.formData(); const file=form.get("file");
    const types=["image/jpeg","image/png","image/webp","application/pdf","text/csv","application/vnd.openxmlformats-officedocument.spreadsheetml.sheet","application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
    if(!(file instanceof File) || !types.includes(file.type) || file.size>10485760 || file.size===0) return respond({error:"Envie JPG, PNG, WebP, PDF, CSV, XLSX ou DOCX de até 10 MB."},400);
-   const path=user.id+"/"+crypto.randomUUID()+"/"+file.name.replace(/[^a-zA-Z0-9._-]/g,"_");
+   const path=owner+"/"+crypto.randomUUID()+"/"+file.name.replace(/[^a-zA-Z0-9._-]/g,"_");
    const result=await db.storage.from("gia-attachments").upload(path,file,{contentType:file.type,upsert:false}); if(result.error) throw result.error;
    return respond({id:crypto.randomUUID(),name:file.name,path,mimeType:file.type,size:file.size});
   }
   if(action==="file" && req.method==="POST") {
    const {path}=await req.json();
-   if(typeof path!=="string" || !path.startsWith(user.id+"/") || path.includes("..")) return respond({error:"Anexo não autorizado."},403);
+   if(typeof path!=="string" || !path.startsWith(owner+"/") || path.includes("..")) return respond({error:"Anexo não autorizado."},403);
    const result=await db.storage.from("gia-attachments").createSignedUrl(path,300); if(result.error) throw result.error;
    return respond({url:result.data.signedUrl});
   }

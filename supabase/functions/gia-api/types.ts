@@ -1,5 +1,7 @@
 export interface SaleLine { id: string; species: string; quantity: number; unitPrice: number; }
 export interface SaleSheet {
+  totalBoxes?: number;
+  brokenBoxes?: number;
   saleNumber: string; company: string; city: string; state: string;
   paymentTerms: string; farm: string; invoiceValue: number;
   products: SaleLine[]; discounts: SaleLine[];

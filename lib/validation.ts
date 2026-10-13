@@ -14,6 +14,8 @@ export function validateExpense(expense: Partial<Expense>, drivers?: Driver[]): 
   if (typeof expense.freightValue !== 'number') return 'Informe o valor do frete.';
   if (expense.saleSheet) {
     const sheet = expense.saleSheet;
+    if (sheet.brokenBoxes !== undefined && (!Number.isFinite(sheet.brokenBoxes) || sheet.brokenBoxes < 0)) return 'Informe uma quantidade de quebra válida.';
+    if (sheet.totalBoxes !== undefined && (!Number.isFinite(sheet.totalBoxes) || sheet.totalBoxes < 0)) return 'Informe uma quantidade total de caixas válida.';
     if (![sheet.invoiceValue, sheet.freightPerBox, ...sheet.products.flatMap(line => [line.quantity, line.unitPrice]), ...sheet.discounts.flatMap(line => [line.quantity, line.unitPrice])].every(value => typeof value === 'number' && Number.isFinite(value) && value >= 0)) return 'Confira quantidades e valores da ficha: use números positivos ou zero.';
   }
   if ((expense.exitOdometer ?? 0) < (expense.entryOdometer ?? 0)) return 'O hodômetro final não pode ser menor que o inicial.';
