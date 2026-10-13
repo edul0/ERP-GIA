@@ -22,7 +22,7 @@ import { SaveIcon } from './components/icons/SaveIcon';
 import { fetchUserData, saveUserData } from './services/firebaseService';
 
 const VIEW_ROLES: Record<View, Role[]> = {
- dashboard: ['admin', 'user', 'finance', 'viewer'], dre: ['admin', 'finance'],
+ 'data-management': ['admin','user','finance'], dashboard: ['admin', 'user', 'finance', 'viewer'], dre: ['admin', 'finance'],
  'motorista-interno': ['admin', 'user', 'finance', 'viewer'], 'motorista-externo': ['admin', 'user', 'finance', 'viewer'],
  'driver-management': ['admin', 'user', 'finance', 'viewer'], 'advanced-reports': ['admin', 'user', 'finance', 'viewer'],
  tracking: ['admin', 'finance', 'viewer'], maintenance: ['admin', 'user', 'mechanic', 'finance'], fleet: ['admin', 'user', 'finance', 'viewer', 'mechanic'], 'user-management': ['admin']
@@ -365,7 +365,8 @@ const App: React.FC = () => {
     if (!dataReady) return <p>Carregando a base...</p>;
     if (!currentUser || !VIEW_ROLES[view]?.includes(currentUser.role)) return <div className="surface">Seu perfil não tem acesso a esta área.</div>;
     switch (view) {
-      case 'fleet': return <VehicleManagement trucks={trucks} canEdit={['admin', 'user', 'finance'].includes(currentUser.role)} onSave={truck => { assertEdit(['admin', 'user', 'finance']); setTrucks(previous => previous.some(item => item.id === truck.id) ? previous.map(item => item.id === truck.id ? truck : item) : [...previous, truck]); }} />;
+      case 'data-management': return <section className="surface space-y-4"><h2 className="text-xl font-bold">Excluir dados</h2><p>Escolha o cadastro e use o botão Excluir no registro desejado.</p><div className="flex gap-3 flex-wrap">{[['motorista-interno','Frota interna'],['motorista-externo','Frota externa'],['fleet','Veículos'],['driver-management','Motoristas']].map(([target,label]) => <button key={target} className="border rounded-lg px-4 py-2" onClick={()=>handleSetView(target as View)}>{label}</button>)}</div></section>;
+      case 'fleet': return <VehicleManagement onDelete={id => { assertEdit(['admin','user','finance']); const truck=trucks.find(item=>item.id===id); if(maintenance.some(item=>item.truckId===id)||expenses.some(item=>item.licensePlate.replace(/[^a-z0-9]/gi,'').toUpperCase()===truck?.plate.replace(/[^a-z0-9]/gi,'').toUpperCase())){showToast('Veículo vinculado a ficha ou manutenção. Preserve o histórico antes de excluir.');return;}setTrucks(previous=>previous.filter(item=>item.id!==id)); }} trucks={trucks} canEdit={['admin', 'user', 'finance'].includes(currentUser.role)} onSave={truck => { assertEdit(['admin', 'user', 'finance']); setTrucks(previous => previous.some(item => item.id === truck.id) ? previous.map(item => item.id === truck.id ? truck : item) : [...previous, truck]); }} />;
       case 'dashboard':
         return <ExecutiveDashboard expenses={expenses} drivers={drivers} trucks={trucks} maintenance={maintenance} />;
       case 'dre':

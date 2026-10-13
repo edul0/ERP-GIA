@@ -51,7 +51,7 @@ export interface User {
   profilePicture?: string;
 }
 
-export type View = 'dashboard' | 'motorista-interno' | 'motorista-externo' | 'user-management' | 'driver-management' | 'advanced-reports' | 'tracking' | 'maintenance' | 'fleet' | 'dre';
+export type View = 'dashboard' | 'motorista-interno' | 'motorista-externo' | 'user-management' | 'driver-management' | 'advanced-reports' | 'tracking' | 'maintenance' | 'fleet' | 'dre' | 'data-management';
 
 export interface MaintenanceRecord {
   id: string;

@@ -13,7 +13,7 @@ test('CSV da ficha preserva produtos, descontos, acentos, aspas e valores em ida
  assert.equal(imported.saleSheet?.company,expense.saleSheet.company);assert.equal(imported.saleSheet?.notes,expense.saleSheet.notes);
  assert.equal(imported.saleSheet?.products.length,0);assert.equal(imported.saleSheet?.totalBoxes,15);assert.equal(imported.saleSheet?.brokenBoxes,0);
  assert.equal(saleTotals(imported.saleSheet!).boxes,saleTotals(expense.saleSheet).boxes);
- assert.ok(!rows[0].some(value=>String(value).startsWith('Espécie')));assert.ok(!rows[0].includes('Abastecimento'));assert.ok(!rows[0].includes('ID_Motorista'));
+ assert.ok(!rows[0].some(value=>String(value).startsWith('Espécie')));assert.ok(rows[0].includes('Abastecimento'));assert.ok(!rows[0].includes('Valor da NF'));assert.ok(!rows[0].includes('Prazo pag.'));assert.equal(rows[0][0],'Nº NF');assert.ok(!rows[0].includes('ID_Motorista'));
 });
 test('importação aceita data brasileira e rejeita motorista desconhecido e colunas antigas',()=>{
  const rows=sheetCSVRows([expense],drivers);rows[1][0]='19/09/2026';

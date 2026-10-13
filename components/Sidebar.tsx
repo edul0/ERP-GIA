@@ -32,6 +32,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, currentUser, on
     { view: 'maintenance', label: 'Manutenção', icon: <Wrench size={20} />, roles: ['admin', 'user', 'mechanic', 'finance'] },
     { view: 'driver-management', label: 'Motoristas', icon: <Users size={20} />, roles: ['admin', 'user', 'finance', 'viewer'] },
     { view: 'advanced-reports', label: 'Inteligência (B.I)', icon: <BarChart3 size={20} />, roles: ['admin', 'user', 'finance', 'viewer'] },
+    { view: 'data-management', label: 'Excluir dados', icon: <Boxes size={20} />, roles: ['admin','user','finance'] },
     { view: 'user-management', label: 'Configurações', icon: <Settings size={20} />, roles: ['admin'] },
   ];
   

@@ -5,14 +5,14 @@ import {validDate} from './finance';
 const base=['Data','Venda nº','Firma','Dia da semana','Cidade','Estado','Prazo pag.','Roça','Nº NF','Valor da NF'];
 const tail=['Valor total a pagar','Motorista','Placa','Cidade do motorista','Estado do motorista','Valor do frete por cx','Valor do seguro','Valor total do frete','Obs.'];
 const num=(value:number)=>String(value).replace('.',',');
-export function sheetCSVRows(expenses:Expense[],drivers:Driver[]):unknown[][] {
+function previousSheetCSVRows(expenses:Expense[],drivers:Driver[]):unknown[][] {
  const header=[...base,'Total de cx',...tail];
  return [header,...expenses.map(e=>{const s=e.saleSheet||emptySaleSheet();const t=saleTotals(s);return [e.date,s.saleNumber,s.company,new Date(e.date+'T12:00:00').toLocaleDateString('pt-BR',{weekday:'long'}),s.city,s.state,s.paymentTerms,s.farm,e.invoice,num(s.invoiceValue),num(t.boxes),num(t.payable),drivers.find(d=>d.id===e.driverId)?.name||'',e.licensePlate,s.driverCity,s.driverState,num(s.freightPerBox),num(e.seguro),num(e.freightValue),s.notes];})];
 }
-export function importSheetCSV(text:string,drivers:Driver[],type:'internal'|'external'):Omit<Expense,'id'>[] {
+function importPreviousSheetCSV(text:string,drivers:Driver[],type:'internal'|'external'):Omit<Expense,'id'>[] {
  const rows=parseCSV(text.replace(/^\uFEFF/,''));
  if(!rows[0]?.includes('Total de cx') || rows[0].some(name=>/^Desconto [0-9]+$/.test(name)))return importLegacySheetCSV(text,drivers,type);
- const header=rows[0];const expected=sheetCSVRows([],drivers)[0] as string[];
+ const header=rows[0];const expected=[...base,'Total de cx',...tail];
  if(header.length!==expected.length || expected.some(name=>!header.includes(name)) || new Set(header).size!==header.length)throw new Error('Use o modelo CSV atual.');
  const converted=[...base,'Total de cx','Valor total','Quant. desconto 1','Desconto 1','Valor unitário desconto 1','Valor total desconto 1',...tail];
  const data=rows.slice(1).map((row,index)=>{if(row.length!==header.length)throw new Error(`Linha ${index+2}: quantidade de colunas inválida.`);const values=Object.fromEntries(header.map((name,i)=>[name,row[i]]));return converted.map(name=>name==='Valor total'?values['Valor da NF']:name==='Quant. desconto 1'?(values['Quantidade de caixas (quebra)']||'0'):name==='Desconto 1'?'Quebra':name==='Valor unitário desconto 1'||name==='Valor total desconto 1'?'0':values[name]);});
@@ -55,3 +55,20 @@ function importLegacySheetCSV(text:string,drivers:Driver[],type:'internal'|'exte
   return {date,driverId:matches[0].id,licensePlate:get('Placa').trim().toUpperCase(),invoice:get('Nº NF'),freightValue:money('Valor total do frete'),seguro:money('Valor do seguro'),destination:s.city,type,saleSheet:s,thirdPartyFreight:0,fueling:0,toll:0,driverExpenses:0,entryOdometer:0,exitOdometer:0};
  }catch(error){throw new Error(`Linha ${index+2}: ${error instanceof Error?error.message:'dados inválidos'}`);}});
 }
+const currentHeaders=['Nº NF','Data','Firma','Dia da semana','Cidade','Estado','Roça','Total de cx','Motorista','Placa','Cidade do motorista','Estado do motorista','Valor do frete por cx','Valor do seguro','Valor total do frete','Abastecimento','Km de saída','Km de chegada','Despesas do motorista','Pedágio','Obs.'];
+export function sheetCSVRows(expenses:Expense[],drivers:Driver[]):unknown[][] {
+ return [currentHeaders,...expenses.map(e=>{const s=e.saleSheet||emptySaleSheet();return [e.invoice,e.date,s.company,new Date(e.date+'T12:00:00').toLocaleDateString('pt-BR',{weekday:'long'}),s.city,s.state,s.farm,num(saleTotals(s).boxes),drivers.find(d=>d.id===e.driverId)?.name||'',e.licensePlate,s.driverCity,s.driverState,num(s.freightPerBox),num(e.seguro),num(e.freightValue),num(e.fueling),num(e.entryOdometer),num(e.exitOdometer),num(e.driverExpenses),num(e.toll),s.notes];})];
+}
+export function importSheetCSV(text:string,drivers:Driver[],type:'internal'|'external'):Omit<Expense,'id'>[] {
+ const rows=parseCSV(text.replace(/^\uFEFF/,''));if(!rows[0]?.includes('Abastecimento'))return importPreviousSheetCSV(text,drivers,type);
+ const header=rows[0];if(rows.length<2 || header.length!==currentHeaders.length || currentHeaders.some(name=>!header.includes(name)) || new Set(header).size!==header.length)throw new Error('Use o modelo CSV atual.');
+ const legacyHeader=[...base,'Total de cx',...tail];
+ const values=rows.slice(1).map((row,index)=>{if(row.length!==header.length)throw new Error(`Linha ${index+2}: quantidade de colunas inválida.`);return Object.fromEntries(header.map((name,i)=>[name,row[i]]));});
+ const converted=[legacyHeader,...values.map(row=>legacyHeader.map(name=>row[name]||''))].map(row=>row.map(value=>'"'+String(value).replaceAll('"','""')+'"').join(';')).join('\r\n');
+ return importPreviousSheetCSV(converted,drivers,type).map((e,index)=>{
+ const value=values[index];const number=(name:string)=>{const n=parseMoney(value[name]);if(!Number.isFinite(n)||n<0)throw new Error(`Linha ${index+2}: valor inválido em ${name}.`);return n;};
+ const start=number('Km de saída'),end=number('Km de chegada');if(end<start)throw new Error(`Linha ${index+2}: km de chegada menor que km de saída.`);
+ return {...e,fueling:number('Abastecimento'),entryOdometer:start,exitOdometer:end,driverExpenses:number('Despesas do motorista'),toll:number('Pedágio')};
+ });
+}
+
