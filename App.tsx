@@ -54,7 +54,6 @@ const App: React.FC = () => {
   const [savedSnapshot, setSavedSnapshot] = useState('');
   const [dataReady, setDataReady] = useState(false);
   const [dataError, setDataError] = useState('');
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const applyData = (data: UserData, role?: Role) => {
     setExpenses(data.expenses);
     setDrivers(data.drivers);
@@ -99,21 +98,6 @@ const App: React.FC = () => {
       console.error(e);
     }
   }, [view]);
-
-  const handleProfilePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-       const file = e.target.files[0];
-       const reader = new FileReader();
-       reader.onloadend = () => {
-          const result = reader.result as string;
-          setCurrentUser(prev => prev ? {...prev, profilePicture: result} : prev);
-          setUsers(prevUsers => prevUsers.map(u => 
-             currentUser && u.id === currentUser.id ? {...u, profilePicture: result} : u
-          ));
-       };
-       reader.readAsDataURL(file);
-    }
-  };
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -471,27 +455,7 @@ const App: React.FC = () => {
                   <span className="text-sm font-bold text-gray-800 leading-none">{currentUser.username}</span>
                   <span className="text-xs text-gray-400 font-medium">{currentUser.role === 'admin' ? 'Administrador' : 'Operador'}</span>
                </div>
-               <div 
-                 className="relative h-8 w-8 md:h-10 md:w-10 bg-brand-100 border border-brand-200 rounded-full flex items-center justify-center text-brand-600 font-bold text-sm md:text-base cursor-pointer overflow-hidden group"
-                 onClick={() => fileInputRef.current?.click()}
-                 title="Alterar foto de perfil"
-               >
-                 {currentUser.profilePicture ? (
-                   <img src={currentUser.profilePicture} alt={currentUser.username} className="w-full h-full object-cover" />
-                 ) : (
-                   currentUser.username.charAt(0)
-                 )}
-                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                 </div>
-               </div>
-               <input 
-                  type="file" 
-                  ref={fileInputRef} 
-                  onChange={handleProfilePhotoChange} 
-                  accept="image/*" 
-                  className="hidden" 
-               />
+
             </div>
           </div>
         </header>
