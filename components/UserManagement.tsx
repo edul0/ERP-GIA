@@ -6,8 +6,8 @@ import ConfirmationModal from './ConfirmationModal';
 
 interface UserManagementProps {
     users: User[];
-    onAddUser: (username: string, password: string, role: Role) => void;
-    onUpdateUser: (user: User) => void;
+    onAddUser: (username: string, password: string, role: Role) => void | Promise<void>;
+    onUpdateUser: (user: User) => void | Promise<void>;
     onDeleteUser: (userId: string) => void;
     currentUser: User;
 }
@@ -45,9 +45,9 @@ const UserManagement: React.FC<UserManagementProps> = ({ users, onAddUser, onUpd
         );
     }, [users, searchTerm]);
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-
+        try {
         if (isEditing) {
             if (username.trim() === '') {
                 alert('O nome de usuário não pode estar vazio.');
@@ -66,18 +66,20 @@ const UserManagement: React.FC<UserManagementProps> = ({ users, onAddUser, onUpd
                 // Only update password if a new one is provided
                 password: password.trim() === '' ? userToEdit.password : password.trim(),
             };
-            onUpdateUser(updatedUser);
+            await onUpdateUser(updatedUser);
             alert('Usuário atualizado com sucesso!');
         } else {
             if (username.trim() === '' || password.trim() === '') {
                 alert('Por favor, preencha o nome de usuário e a senha.');
                 return;
             }
-            onAddUser(username, password, role);
+            await onAddUser(username.trim(), password, role);
             alert('Usuário criado com sucesso!');
         }
 
         setUserToEdit(null); // This will trigger the useEffect to reset the form
+        setUsername(''); setPassword(''); setRole('user');
+        } catch(error) { alert(error instanceof Error ? error.message : 'Não foi possível salvar o usuário.'); }
     };
 
     const handleCancelEdit = () => {
