@@ -2,7 +2,7 @@ import { expenseReport } from '../lib/report';
 import { csvCell } from '../lib/csv';
 import { tripCosts } from '../lib/finance';
 import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
-import { Expense, Driver, View } from '../types';
+import { Expense, Driver, View, Truck } from '../types';
 import { 
   Plus, 
   Download, 
@@ -25,6 +25,7 @@ import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 
 interface ExpensesListProps {
+  trucks: Truck[];
   expenses: Expense[];
   drivers: Driver[];
   type: 'internal' | 'external';
@@ -38,7 +39,7 @@ interface ExpensesListProps {
 }
 
 export const ExpensesList: React.FC<ExpensesListProps> = ({ 
-  expenses, drivers, type, isAdmin, onAddExpense, onUpdateExpense, onDeleteExpense, onImportExpenses, showToast, onBulkUpdate 
+  expenses, drivers, trucks, type, isAdmin, onAddExpense, onUpdateExpense, onDeleteExpense, onImportExpenses, showToast, onBulkUpdate
 }) => {
   const [filterDriver, setFilterDriver] = useState('all');
   const [filterYear, setFilterYear] = useState('all');
@@ -396,6 +397,7 @@ export const ExpensesList: React.FC<ExpensesListProps> = ({
           type={type}
           isAdmin={isAdmin}
           drivers={drivers}
+          trucks={trucks}
           expense={editingExpense}
           onClose={() => setIsModalOpen(false)}
           onSave={(data) => {

@@ -3,11 +3,12 @@ import SaleSheetFields from './SaleSheetFields';
 import AttachmentFields from './AttachmentFields';
 import { saleSheetReport } from '../lib/report';
 import React, { useState, useEffect, useRef } from 'react';
-import { Expense, Driver } from '../types';
+import { Expense, Driver, Truck } from '../types';
 import { X } from 'lucide-react';
 import { useMapsLibrary } from '@vis.gl/react-google-maps';
 
 interface ExpensesModalProps {
+  trucks?: Truck[];
   isOpen: boolean;
   type: 'internal' | 'external';
   isAdmin?: boolean;
@@ -17,7 +18,7 @@ interface ExpensesModalProps {
   onSave: (data: Partial<Expense>) => void;
 }
 
-export const ExpensesModal: React.FC<ExpensesModalProps> = ({ isOpen, type, isAdmin, drivers, expense, onClose, onSave }) => {
+export const ExpensesModal: React.FC<ExpensesModalProps> = ({ isOpen, type, isAdmin, drivers, trucks = [], expense, onClose, onSave }) => {
   const [formError, setFormError] = useState('');
   const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState<Partial<Expense>>({
@@ -153,11 +154,14 @@ export const ExpensesModal: React.FC<ExpensesModalProps> = ({ isOpen, type, isAd
               <input
                 type="text"
                 value={formData.licensePlate}
+                list="registered-vehicles"
                 onChange={(e) => setFormData({...formData, licensePlate: e.target.value.toUpperCase()})}
                 className="w-full p-2 border rounded-md text-sm"
                 placeholder="ABC-1234"
                 required
               />
+              <datalist id="registered-vehicles">{trucks.map(truck => <option key={truck.id} value={truck.plate}>{truck.model}</option>)}</datalist>
+              <p className="text-xs text-gray-500 mt-1">Selecione uma placa cadastrada ou informe a placa do veículo terceiro.</p>
             </div>
             <div>
               <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Nota Fiscal</label>
@@ -170,6 +174,8 @@ export const ExpensesModal: React.FC<ExpensesModalProps> = ({ isOpen, type, isAd
             </div>
           </div>
 
+ 
+          <SaleSheetFields value={formData.saleSheet} date={formData.date} onChange={saleSheet => setFormData(previous => ({ ...previous, saleSheet }))} />
           <div>
              <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Anexar Comprovante / NF-e (Opcional)</label>
              <input
@@ -356,7 +362,7 @@ export const ExpensesModal: React.FC<ExpensesModalProps> = ({ isOpen, type, isAd
             </div>
           </div>
 
-          <SaleSheetFields value={formData.saleSheet} date={formData.date} onChange={saleSheet => setFormData(previous => ({ ...previous, saleSheet }))} />
+
           <AttachmentFields value={formData.attachments} onBusy={setUploading} onChange={attachments => setFormData(previous => ({...previous,attachments}))} />
           <div className="pt-4 border-t flex justify-end gap-3">
              <button type="button" className="px-4 py-2 text-brand-700 font-bold" onClick={async () => { try { const pdf = await saleSheetReport(formData, drivers.find(driver => driver.id === formData.driverId)?.name || ''); pdf.save('ficha-venda.pdf'); } catch { setFormError('Não foi possível gerar a ficha para impressão.'); } }}>Imprimir ficha</button>

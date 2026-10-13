@@ -10,6 +10,7 @@ const ExpensesList = lazy(() => import('./components/ExpensesList').then(module 
 import Login from './components/Login';
 const UserManagement = lazy(() => import('./components/UserManagement'));
 const OnlineUserManagement = lazy(() => import('./components/OnlineUserManagement'));
+const VehicleManagement = lazy(() => import('./components/VehicleManagement'));
 const DriverManagement = lazy(() => import('./components/DriverManagement'));
 const AdvancedReports = lazy(() => import('./components/AdvancedReports'));
 const TrackingMap = lazy(() => import('./components/TrackingMap'));
@@ -372,15 +373,15 @@ const App: React.FC = () => {
     if (!dataReady) return <p>Carregando a base...</p>;
     if (!currentUser || !VIEW_ROLES[view]?.includes(currentUser.role)) return <div className="surface">Seu perfil não tem acesso a esta área.</div>;
     switch (view) {
-      case 'fleet': return <div className="surface"><h1 className="text-2xl font-bold text-brand-900 mb-5">Veículos e equipamentos</h1><div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">{trucks.map(truck => <article key={truck.id} className="rounded-xl border border-brand-100 p-5"><p className="text-xl font-bold text-brand-800">{truck.plate}</p><p className="mt-2">{truck.model} • {truck.year}</p><p className="text-sm text-gray-500 mt-2">{truck.lastOdometer.toLocaleString('pt-BR')} km</p><p className="text-sm mt-2">{truck.status === 'active' ? 'Ativo' : truck.status === 'maintenance' ? 'Em manutenção' : 'Parado'}</p></article>)}</div>{trucks.length === 0 && <p>Nenhum veículo cadastrado.</p>}</div>;
+      case 'fleet': return <VehicleManagement trucks={trucks} canEdit={['admin', 'user', 'finance'].includes(currentUser.role)} onSave={truck => { assertEdit(['admin', 'user', 'finance']); setTrucks(previous => previous.some(item => item.id === truck.id) ? previous.map(item => item.id === truck.id ? truck : item) : [...previous, truck]); }} />;
       case 'dashboard':
         return <ExecutiveDashboard expenses={expenses} drivers={drivers} trucks={trucks} maintenance={maintenance} />;
       case 'dre':
         return <DRE expenses={expenses} />;
       case 'motorista-interno':
-        return <ExpensesList type="internal" isAdmin={currentUser?.role === 'admin'} expenses={expenses.filter(e => e.type === 'internal')} drivers={drivers} onAddExpense={addExpense} onUpdateExpense={updateExpense} onDeleteExpense={deleteExpense} onImportExpenses={addExpensesBatch} showToast={showToast} onBulkUpdate={handleBulkUpdateExpenses} />;
+        return <ExpensesList type="internal" isAdmin={currentUser?.role === 'admin'} expenses={expenses.filter(e => e.type === 'internal')} drivers={drivers} trucks={trucks} onAddExpense={addExpense} onUpdateExpense={updateExpense} onDeleteExpense={deleteExpense} onImportExpenses={addExpensesBatch} showToast={showToast} onBulkUpdate={handleBulkUpdateExpenses} />;
       case 'motorista-externo':
-        return <ExpensesList type="external" isAdmin={currentUser?.role === 'admin'} expenses={expenses.filter(e => e.type === 'external')} drivers={drivers} onAddExpense={addExpense} onUpdateExpense={updateExpense} onDeleteExpense={deleteExpense} onImportExpenses={addExpensesBatch} showToast={showToast} onBulkUpdate={handleBulkUpdateExpenses} />;
+        return <ExpensesList type="external" isAdmin={currentUser?.role === 'admin'} expenses={expenses.filter(e => e.type === 'external')} drivers={drivers} trucks={trucks} onAddExpense={addExpense} onUpdateExpense={updateExpense} onDeleteExpense={deleteExpense} onImportExpenses={addExpensesBatch} showToast={showToast} onBulkUpdate={handleBulkUpdateExpenses} />;
       case 'maintenance':
         return <Maintenance maintenance={maintenance} trucks={trucks} onAddMaintenance={(m) => (() => { assertEdit(['admin', 'mechanic']); const issue = validateMaintenance(m, trucks); if (issue) throw new Error(issue); setMaintenance(prev => [{id: crypto.randomUUID(), ...m} as MaintenanceRecord, ...prev]); })()} onUpdateMaintenance={(m) => (() => { assertEdit(['admin', 'mechanic']); const issue = validateMaintenance(m, trucks); if (issue) throw new Error(issue); setMaintenance(prev => prev.map(record => record.id === m.id ? m : record)); })()} onDeleteMaintenance={(id) => setMaintenance(prev => prev.filter(record => record.id !== id))} />;
       case 'driver-management':
