@@ -2,6 +2,7 @@ import React, { Component, ErrorInfo, ReactNode } from "react";
 
 interface Props {
   children?: ReactNode;
+  hasUnsavedChanges?: boolean;
 }
 
 interface State {
@@ -26,10 +27,11 @@ export class ErrorBoundary extends Component<Props, State> {
   public render() {
     if (this.state.hasError) {
       return (
-        <div style={{ padding: "20px", color: "red", background: "#fdd", zIndex: 9999 }}>
-          <h1>Sorry.. there was an error</h1>
-          <pre>{this.state.error?.message}</pre>
-          <pre>{this.state.error?.stack}</pre>
+        <div role="alert" className="rounded-xl border border-amber-200 bg-amber-50 p-5 text-amber-900">
+          <h2 className="font-bold text-lg">Não foi possível carregar esta tela</h2>
+          <p className="mt-2">Confira sua conexão. Se o sistema foi atualizado, recarregue para abrir a versão atual.</p>
+          {this.props.hasUnsavedChanges && <p className="mt-2 font-semibold">Há alterações pendentes. Use Salvar e aguarde a confirmação na nuvem antes de recarregar.</p>}
+          <button type="button" disabled={this.props.hasUnsavedChanges} onClick={()=>window.location.reload()} className="mt-4 rounded-lg bg-brand-600 px-4 py-2 text-white disabled:opacity-50">Recarregar sistema</button>
         </div>
       );
     }
