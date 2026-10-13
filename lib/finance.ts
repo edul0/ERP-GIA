@@ -3,6 +3,7 @@ import type { Expense } from '../types';
 export const costFields = ['fueling', 'driverExpenses', 'toll', 'thirdPartyFreight', 'seguro', 'loadingUnloading', 'fines', 'others'] as const;
 export const costLabels: Record<typeof costFields[number], string> = { fueling: 'Combustível', driverExpenses: 'Despesas do motorista', toll: 'Pedágio', thirdPartyFreight: 'Frete terceiro', seguro: 'Seguro', loadingUnloading: 'Carga e descarga', fines: 'Multas', others: 'Outros custos' };
 export const cents = (value: number | undefined) => Math.round((value ?? 0) * 100);
+export const distanceTraveled = (expense: Partial<Expense>) => (expense.exitOdometer ?? 0) - (expense.entryOdometer ?? 0);
 export const tripCosts = (expense: Partial<Expense>) => costFields.reduce((sum, key) => sum + cents(expense[key]), 0) / 100;
 export const sumMoney = <T,>(rows: T[], pick: (row: T) => number | undefined) => rows.reduce((sum, row) => sum + cents(pick(row)), 0) / 100;
 export const currency = (value: number) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });

@@ -56,6 +56,9 @@ input[type='checkbox'] { accent-color: #17663c; }
 .sheet-totals span { font-size: 12px; color: #536b5b; }
 .sheet-totals strong { font-size: 19px; color: #104c2d; font-variant-numeric: tabular-nums; }
 .sheet-freight-grid { margin-top: 18px; display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 14px; }
+.sheet-km-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; margin-bottom: 18px; }
+.sheet-distance-total { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; margin-bottom: 18px; border-radius: 8px; background: #eef5f0; color: #175132; font-size: 13px; }
+.sheet-distance-total output { font-weight: 700; font-size: 18px; font-variant-numeric: tabular-nums; }
 @media (max-width: 640px) { .sheet-section { padding: 14px; } .sheet-fields-grid, .sheet-freight-grid { grid-template-columns: 1fr; gap: 14px; } .sheet-line-heading { display: none; } .sheet-line { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; position: relative; padding: 14px 28px 14px 0; } .sheet-mobile-label { display: block; font-size: 11px; color: #526f5e; margin-bottom: 5px; font-weight: 600; } .sheet-remove { position: absolute; top: 12px; right: 0; } .sheet-line-total { text-align: left; } .sheet-section-heading { align-items: flex-start; } .sheet-totals { padding: 12px; gap: 12px; } .sheet-totals strong { font-size: 17px; } }
 .sidebar-brand { padding: 28px 22px 22px; border-bottom: 1px solid #ffffff16; }
 .brand-plate { padding: 4px 0 10px; background: transparent; border-radius: 0; }

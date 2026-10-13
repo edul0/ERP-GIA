@@ -1,6 +1,6 @@
 import { jsPDF } from 'jspdf';
 import type { Driver, Expense } from '../types';
-import { currency, displayDate, sumMoney, tripCosts } from './finance';
+import { currency, displayDate, sumMoney, tripCosts, distanceTraveled } from './finance';
 import { emptySaleSheet, saleTotals } from './saleSheet';
 
 export interface ReportOptions {
@@ -108,6 +108,6 @@ export async function saleSheetReport(expense: Partial<Expense>, driverName: str
   summary: [['Quantidade total de caixas', String(totals.boxes)], ['Valor total do frete', currency(expense.freightValue || 0)]],
   columns: ['Descrição', 'Quantidade de caixas'], widths: [210, 63],
   rows: [['Total de caixas', String(totals.boxes)]],
-  note: `Motorista: ${driverName} | Placa: ${expense.licensePlate || ''} | ${sheet.driverCity} / ${sheet.driverState}\nFrete por caixa: ${currency(sheet.freightPerBox)} | Seguro: ${currency(expense.seguro || 0)}\nAbastecimento: ${currency(expense.fueling || 0)} | Despesas do motorista: ${currency(expense.driverExpenses || 0)} | Pedágio: ${currency(expense.toll || 0)}\nKm de saída: ${expense.entryOdometer || 0} | Km de chegada: ${expense.exitOdometer || 0}\nObservação: ${sheet.notes}`
+  note: `Motorista: ${driverName} | Placa: ${expense.licensePlate || ''}\nFrete por caixa: ${currency(sheet.freightPerBox)} | Seguro: ${currency(expense.seguro || 0)}\nAbastecimento: ${currency(expense.fueling || 0)} | Despesas do motorista: ${currency(expense.driverExpenses || 0)} | Pedágio: ${currency(expense.toll || 0)}\nKm de saída: ${expense.entryOdometer || 0} | Km de chegada: ${expense.exitOdometer || 0} | Km percorridos: ${distanceTraveled(expense)}\nObservação: ${sheet.notes}`
  });
 }
