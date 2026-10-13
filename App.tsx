@@ -156,6 +156,11 @@ const App: React.FC = () => {
     const timeout = window.setTimeout(() => { if(navigator.onLine) void handleSaveData(); }, dataError ? 30000 : 1200);
     return () => window.clearTimeout(timeout);
   }, [currentUser, hasUnsavedChanges, snapshot, isLoading, dataError, handleSaveData]);
+  useEffect(() => {
+    const resume = () => { if(!isDemo && currentUser && currentUser.role !== 'viewer' && hasUnsavedChanges && !isLoading) void handleSaveData(); };
+    window.addEventListener('online', resume);
+    return () => window.removeEventListener('online', resume);
+  }, [currentUser, hasUnsavedChanges, isLoading, handleSaveData]);
   const syncState = useRef({ dirty: hasUnsavedChanges, loading: isLoading, revision });
   syncState.current = { dirty: hasUnsavedChanges, loading: isLoading, revision };
   useEffect(() => {
