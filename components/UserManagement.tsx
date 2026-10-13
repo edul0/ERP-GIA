@@ -118,6 +118,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ users, onAddUser, onUpd
                             <input
                                 id="new-password"
                                 type="password"
+                                autoComplete="new-password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-green-500"

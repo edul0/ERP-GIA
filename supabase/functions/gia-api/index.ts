@@ -42,7 +42,8 @@ Deno.serve(async (req: Request) => {
    const input=await req.json();
    if(input.id===user.id && (input.disable || input.role!=="admin")) return respond({error:"Você não pode remover seu próprio acesso."},400);
    if(input.disable) { const result=await db.from("gia_users").update({disabled:true}).eq("id",input.id); if(result.error) throw result.error; return respond({ok:true}); }
-   if(typeof input.username!=="string" || !/^[a-zA-Z0-9._-]{2,80}$/.test(input.username) || !["admin","user","finance","mechanic","viewer"].includes(input.role) || (input.password && input.password.length<8)) return respond({error:"Informe usuário válido e uma senha nova de pelo menos 8 caracteres."},400);
+   if(typeof input.username!=="string" || !/^[a-zA-Z0-9._-]{2,80}$/.test(input.username) || !["admin","user","finance","mechanic","viewer"].includes(input.role)) return respond({error:"Informe usuário e permissão válidos."},400);
+   if((input.password != null && typeof input.password!=="string") || (!input.id && !input.password?.trim()) || (typeof input.password==="string" && new TextEncoder().encode(input.password).length>72)) return respond({error:"Informe a senha desejada (até 72 bytes). Ao editar, deixe em branco para manter a senha atual."},400);
    const result=await db.rpc("gia_save_user",{p_id:input.id||crypto.randomUUID(),p_username:input.username,p_password:input.password||null,p_role:input.role});
    if(result.error) throw result.error;
    return respond({ok:true});
