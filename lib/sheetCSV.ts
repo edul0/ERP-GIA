@@ -6,16 +6,16 @@ const base=['Data','Venda nº','Firma','Dia da semana','Cidade','Estado','Prazo 
 const tail=['Valor total a pagar','Motorista','Placa','Cidade do motorista','Estado do motorista','Valor do frete por cx','Valor do seguro','Valor total do frete','Obs.'];
 const num=(value:number)=>String(value).replace('.',',');
 export function sheetCSVRows(expenses:Expense[],drivers:Driver[]):unknown[][] {
- const header=[...base,'Total de cx','Quantidade de caixas (quebra)',...tail];
- return [header,...expenses.map(e=>{const s=e.saleSheet||emptySaleSheet();const t=saleTotals(s);return [e.date,s.saleNumber,s.company,new Date(e.date+'T12:00:00').toLocaleDateString('pt-BR',{weekday:'long'}),s.city,s.state,s.paymentTerms,s.farm,e.invoice,num(s.invoiceValue),num(t.boxes),num(s.brokenBoxes??s.discounts.reduce((sum,line)=>sum+line.quantity,0)),num(t.payable),drivers.find(d=>d.id===e.driverId)?.name||'',e.licensePlate,s.driverCity,s.driverState,num(s.freightPerBox),num(e.seguro),num(e.freightValue),s.notes];})];
+ const header=[...base,'Total de cx',...tail];
+ return [header,...expenses.map(e=>{const s=e.saleSheet||emptySaleSheet();const t=saleTotals(s);return [e.date,s.saleNumber,s.company,new Date(e.date+'T12:00:00').toLocaleDateString('pt-BR',{weekday:'long'}),s.city,s.state,s.paymentTerms,s.farm,e.invoice,num(s.invoiceValue),num(t.boxes),num(t.payable),drivers.find(d=>d.id===e.driverId)?.name||'',e.licensePlate,s.driverCity,s.driverState,num(s.freightPerBox),num(e.seguro),num(e.freightValue),s.notes];})];
 }
 export function importSheetCSV(text:string,drivers:Driver[],type:'internal'|'external'):Omit<Expense,'id'>[] {
  const rows=parseCSV(text.replace(/^\uFEFF/,''));
- if(!rows[0]?.includes('Quantidade de caixas (quebra)'))return importLegacySheetCSV(text,drivers,type);
+ if(!rows[0]?.includes('Total de cx') || rows[0].some(name=>/^Desconto [0-9]+$/.test(name)))return importLegacySheetCSV(text,drivers,type);
  const header=rows[0];const expected=sheetCSVRows([],drivers)[0] as string[];
  if(header.length!==expected.length || expected.some(name=>!header.includes(name)) || new Set(header).size!==header.length)throw new Error('Use o modelo CSV atual.');
  const converted=[...base,'Total de cx','Valor total','Quant. desconto 1','Desconto 1','Valor unitário desconto 1','Valor total desconto 1',...tail];
- const data=rows.slice(1).map((row,index)=>{if(row.length!==header.length)throw new Error(`Linha ${index+2}: quantidade de colunas inválida.`);const values=Object.fromEntries(header.map((name,i)=>[name,row[i]]));return converted.map(name=>name==='Valor total'?values['Valor da NF']:name==='Quant. desconto 1'?values['Quantidade de caixas (quebra)']:name==='Desconto 1'?'Quebra':name==='Valor unitário desconto 1'||name==='Valor total desconto 1'?'0':values[name]);});
+ const data=rows.slice(1).map((row,index)=>{if(row.length!==header.length)throw new Error(`Linha ${index+2}: quantidade de colunas inválida.`);const values=Object.fromEntries(header.map((name,i)=>[name,row[i]]));return converted.map(name=>name==='Valor total'?values['Valor da NF']:name==='Quant. desconto 1'?(values['Quantidade de caixas (quebra)']||'0'):name==='Desconto 1'?'Quebra':name==='Valor unitário desconto 1'||name==='Valor total desconto 1'?'0':values[name]);});
  const csv=[converted,...data].map(row=>row.map(value=>'"'+String(value??'').replaceAll('"','""')+'"').join(';')).join('\r\n');
  return importLegacySheetCSV(csv,drivers,type).map(e=>({...e,saleSheet:{...e.saleSheet!,brokenBoxes:e.saleSheet!.discounts.reduce((sum,line)=>sum+line.quantity,0)}}));
 }

@@ -11,7 +11,7 @@ test('CSV da ficha preserva produtos, descontos, acentos, aspas e valores em ida
  const rows=sheetCSVRows([expense],drivers);const imported=importSheetCSV(text(rows),drivers,'external')[0];
  assert.equal(imported.type,'external');assert.equal(imported.driverId,'d');assert.equal(imported.seguro,448.5);
  assert.equal(imported.saleSheet?.company,expense.saleSheet.company);assert.equal(imported.saleSheet?.notes,expense.saleSheet.notes);
- assert.equal(imported.saleSheet?.products.length,0);assert.equal(imported.saleSheet?.totalBoxes,15);assert.equal(imported.saleSheet?.brokenBoxes,3);
+ assert.equal(imported.saleSheet?.products.length,0);assert.equal(imported.saleSheet?.totalBoxes,15);assert.equal(imported.saleSheet?.brokenBoxes,0);
  assert.equal(saleTotals(imported.saleSheet!).boxes,saleTotals(expense.saleSheet).boxes);
  assert.ok(!rows[0].some(value=>String(value).startsWith('Espécie')));assert.ok(!rows[0].includes('Abastecimento'));assert.ok(!rows[0].includes('ID_Motorista'));
 });

@@ -107,7 +107,7 @@ export async function saleSheetReport(expense: Partial<Expense>, driverName: str
   subtitle: `${displayDate(expense.date || '')} (${day}) | Firma: ${sheet.company} | ${sheet.city} / ${sheet.state}\nPrazo: ${sheet.paymentTerms} | Roça: ${sheet.farm} | NF: ${expense.invoice || ''} | Valor NF: ${currency(sheet.invoiceValue)}`,
   summary: [['Quantidade total de caixas', String(totals.boxes)], ['Valor da NF', currency(sheet.invoiceValue)]],
   columns: ['Descrição', 'Quantidade de caixas'], widths: [210, 63],
-  rows: [['Total de caixas', String(totals.boxes)], ['Quebra', String(sheet.brokenBoxes ?? sheet.discounts.reduce((sum,line) => sum + line.quantity, 0))]],
+  rows: [['Total de caixas', String(totals.boxes)]],
   note: `Motorista: ${driverName} | Placa: ${expense.licensePlate || ''} | ${sheet.driverCity} / ${sheet.driverState}\nFrete por caixa: ${currency(sheet.freightPerBox)} | Frete contratado: ${currency(expense.freightValue || 0)} | Seguro: ${currency(expense.seguro || 0)} (${sheet.insuranceIncluded ? 'incluído no frete' : 'separado'})\nObservações: ${sheet.notes}`
  });
 }
