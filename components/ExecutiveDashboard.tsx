@@ -1,4 +1,5 @@
 import {saleTotals} from '../lib/saleSheet';
+import EmptyState from './EmptyState';
 import { expenseReport } from '../lib/report';
 import { currency, displayDate, localDateKey, monthlyTotals, sumMoney, tripCosts } from '../lib/finance';
 import React, { useState, useRef } from 'react';
@@ -217,8 +218,9 @@ export const ExecutiveDashboard: React.FC<DashboardProps> = ({ expenses, drivers
           <h3 className="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2">
             <Wrench className="w-5 h-5 text-orange-600" /> Gastos de Manutenção por Veículo
           </h3>
+          {!maintenance.length&&<EmptyState icon={<Wrench size={25}/>} title="Sem custos de manutenção" description="Quando houver serviços cadastrados, você poderá comparar os gastos por veículo."/>}
           <div className="space-y-4">
-            {truckMaintenanceCosts.map((truck) => (
+            {truckMaintenanceCosts.filter(truck=>truck.maintenanceCost>0).map((truck) => (
               <div key={truck.id} className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="font-medium text-gray-700">{truck.plate} ({truck.model})</span>
@@ -244,7 +246,7 @@ export const ExecutiveDashboard: React.FC<DashboardProps> = ({ expenses, drivers
           <h3 className="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2">
             <TruckIcon className="w-5 h-5 text-emerald-600" /> Distribuição de Manutenção
           </h3>
-          <div className="relative h-80 w-full flex items-center justify-center">
+          {!maintenance.length ? <EmptyState icon={<Wrench size={25}/>} title="Nenhuma manutenção registrada" description="Os serviços aparecerão aqui por tipo após o cadastro na área Manutenção."/> : <><div className="relative h-64 w-full flex items-center justify-center">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
@@ -268,7 +270,7 @@ export const ExecutiveDashboard: React.FC<DashboardProps> = ({ expenses, drivers
               <span className="text-2xl font-bold text-gray-800">{maintenance.length}</span>
               <span className="text-xs text-gray-500 uppercase">Total</span>
             </div>
-          </div>
+          </div><div className="flex flex-wrap justify-center gap-4 text-xs text-gray-500">{maintenanceData.filter(item=>item.value>0).map((item,index)=><span key={item.name} className="inline-flex items-center gap-2"><span className="w-2 h-2 rounded-full" style={{background:COLORS[index%COLORS.length]}}/>{item.name}: {item.value}</span>)}</div></>}
         </div>
         )}
       </div>

@@ -26,17 +26,18 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, currentUser, on
     { view: 'dashboard', label: 'Painel Executivo', icon: <LayoutDashboard size={20} />, roles: ['admin', 'user', 'finance', 'viewer'] },
     { view: 'dre', label: 'Resultado das viagens', icon: <DollarSign size={20} />, roles: ['admin', 'finance'] },
     { view: 'motorista-interno', label: 'Frota Interna', icon: <Truck size={20} />, roles: ['admin', 'user', 'finance', 'viewer'] },
-    { view: 'motorista-externo', label: 'Frota Terceira', icon: <Truck size={20} />, roles: ['admin', 'user', 'finance', 'viewer'] },
+    { view: 'motorista-externo', label: 'Frota Externa', icon: <Truck size={20} />, roles: ['admin', 'user', 'finance', 'viewer'] },
     { view: 'tracking', label: 'Rastreamento GPS', icon: <MapPin size={20} />, roles: ['admin', 'finance', 'viewer'] },
     { view: 'fleet', label: 'Veículos e equipamentos', icon: <Truck size={20} />, roles: ['admin', 'user', 'finance', 'viewer', 'mechanic'] },
     { view: 'maintenance', label: 'Manutenção', icon: <Wrench size={20} />, roles: ['admin', 'user', 'mechanic', 'finance'] },
     { view: 'driver-management', label: 'Motoristas', icon: <Users size={20} />, roles: ['admin', 'user', 'finance', 'viewer'] },
-    { view: 'advanced-reports', label: 'Inteligência (B.I)', icon: <BarChart3 size={20} />, roles: ['admin', 'user', 'finance', 'viewer'] },
+    { view: 'advanced-reports', label: 'Análises • B.I.', icon: <BarChart3 size={20} />, roles: ['admin', 'user', 'finance', 'viewer'] },
     { view: 'data-management', label: 'Excluir dados', icon: <Boxes size={20} />, roles: ['admin','user','finance'] },
     { view: 'user-management', label: 'Configurações', icon: <Settings size={20} />, roles: ['admin'] },
   ];
   
-  const accessibleNavItems = navItems.filter(item => item.roles.includes(currentUser.role));
+  const sections=[{label:'VISÃO GERENCIAL',views:['dashboard','advanced-reports','dre']},{label:'OPERAÇÃO',views:['motorista-interno','motorista-externo','maintenance','tracking']},{label:'CADASTROS',views:['fleet','driver-management']},{label:'ADMINISTRAÇÃO',views:['user-management','data-management']}];
+  const accessibleNavItems=sections.flatMap(section=>section.views.flatMap(view=>navItems.filter(item=>item.view===view&&item.roles.includes(currentUser.role)).map(item=>({...item,section:section.label}))));
 
   return (
     <aside className="app-sidebar h-full w-full flex flex-col">
@@ -45,8 +46,8 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, currentUser, on
         <div className="sidebar-product"><span>GESTÃO DE FROTA</span><span className="product-tag">ERP GIA</span></div>
       </div>
       <nav className="flex-1 overflow-y-auto px-4 py-6 space-y-1.5 custom-scrollbar" aria-label="Navegação principal">
-        <p className="nav-caption">ÁREA DE TRABALHO</p>
-        {accessibleNavItems.map(item => (
+
+        {accessibleNavItems.map((item,index) => (<React.Fragment key={item.view}>{(index===0||accessibleNavItems[index-1].section!==item.section)&&<p className="nav-caption">{item.section}</p>}
           <button
             key={item.view}
             aria-current={currentView === item.view ? "page" : undefined}
@@ -61,7 +62,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, currentUser, on
               {item.icon}
             </span>
             <span className="ml-4 truncate">{item.label}</span>
-          </button>
+          </button></React.Fragment>
         ))}
       </nav>
       <div className="sidebar-footer p-4">
