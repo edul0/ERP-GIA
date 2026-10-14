@@ -1,5 +1,4 @@
 import {mergeCompanyData} from './lib/concurrent';
-import CompanyDashboard from './components/CompanyDashboard';
 import SyncStatus from './components/SyncStatus';
 import ActivityHistory from './components/ActivityHistory';
 import { cloudProfile, isDemo, loginCloud, logout } from './services/session';
@@ -371,7 +370,7 @@ const App: React.FC = () => {
       case 'data-management': return <section className="surface space-y-4"><h2 className="text-xl font-bold">Excluir dados</h2><p>Escolha o cadastro e use o botão Excluir no registro desejado.</p><div className="flex gap-3 flex-wrap">{[['motorista-interno','Frota interna'],['motorista-externo','Frota externa'],['fleet','Veículos'],['driver-management','Motoristas']].map(([target,label]) => <button key={target} className="border rounded-lg px-4 py-2" onClick={()=>handleSetView(target as View)}>{label}</button>)}</div></section>;
       case 'fleet': return <VehicleManagement onDelete={id => { assertEdit(['admin','user','finance']); const truck=trucks.find(item=>item.id===id); if(maintenance.some(item=>item.truckId===id)||expenses.some(item=>item.licensePlate.replace(/[^a-z0-9]/gi,'').toUpperCase()===truck?.plate.replace(/[^a-z0-9]/gi,'').toUpperCase())){showToast('Veículo vinculado a ficha ou manutenção. Preserve o histórico antes de excluir.');return;}setTrucks(previous=>previous.filter(item=>item.id!==id)); }} trucks={trucks} canEdit={['admin', 'user', 'finance'].includes(currentUser.role)} onSave={truck => { assertEdit(['admin', 'user', 'finance']); setTrucks(previous => previous.some(item => item.id === truck.id) ? previous.map(item => item.id === truck.id ? truck : item) : [...previous, truck]); }} />;
       case 'dashboard':
-        return <CompanyDashboard expenses={expenses} trucks={trucks} maintenance={maintenance} />;
+        return <ExecutiveDashboard expenses={expenses} drivers={drivers} trucks={trucks} maintenance={maintenance} />;
       case 'dre':
         return <DRE expenses={expenses} />;
       case 'motorista-interno':
@@ -402,7 +401,7 @@ const App: React.FC = () => {
         />;
         break;
       default:
-        return <CompanyDashboard expenses={expenses} trucks={trucks} maintenance={maintenance} />;
+        return <ExecutiveDashboard expenses={expenses} drivers={drivers} trucks={trucks} maintenance={maintenance} />;
     }
     return <div className="flex items-center justify-center h-full"><div className="text-center p-10 bg-white rounded-lg shadow-md"><h2 className="text-2xl font-bold text-red-600 mb-2">Acesso Negado</h2><p className="text-gray-600">Você não tem permissão para visualizar esta página.</p></div></div>;
   };

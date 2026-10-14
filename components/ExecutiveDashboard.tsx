@@ -1,3 +1,4 @@
+import {saleTotals} from '../lib/saleSheet';
 import { expenseReport } from '../lib/report';
 import { currency, displayDate, localDateKey, monthlyTotals, sumMoney, tripCosts } from '../lib/finance';
 import React, { useState, useRef } from 'react';
@@ -87,7 +88,7 @@ export const ExecutiveDashboard: React.FC<DashboardProps> = ({ expenses, drivers
   return (
     <div ref={dashboardRef} className="executive-dashboard space-y-6 sm:space-y-8 animate-in fade-in duration-500 pb-10">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 flex-wrap relative">
-        <div><p className="eyebrow">GESTÃO DE FROTA</p><h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Visão geral da operação</h1><p className="mt-2 text-sm text-gray-500">Receitas e despesas registradas. Resultado antes de tributos e manutenção.</p></div>
+        <div><p className="eyebrow">GESTÃO DE FROTA</p><h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Visão geral da operação</h1><p className="mt-2 text-sm text-gray-500">Resumo da empresa: fretes, frota e alertas. As comparações detalhadas ficam no B.I.</p></div>
         <div className="flex flex-wrap gap-2 w-full sm:w-auto relative" data-html2canvas-ignore="true">
             <button
                 onClick={() => setIsConfigOpen(!isConfigOpen)}
@@ -130,6 +131,7 @@ export const ExecutiveDashboard: React.FC<DashboardProps> = ({ expenses, drivers
         </div>
       </div>
 
+      <div className="flex flex-wrap gap-4 text-sm text-gray-500"><span><strong className="text-brand-900">{expenses.length}</strong> fichas registradas</span><span><strong className="text-brand-900">{expenses.reduce((total,e)=>total+(e.saleSheet?saleTotals(e.saleSheet).boxes:0),0).toLocaleString('pt-BR')}</strong> caixas transportadas</span><span>Resultado antes de tributos e manutenção.</span></div>
       {/* KPI Cards */}
       <div className="kpi-grid grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between">
@@ -329,6 +331,7 @@ export const ExecutiveDashboard: React.FC<DashboardProps> = ({ expenses, drivers
         </div>
       </div>
       )}
+      <section className="surface"><h2 className="text-lg font-bold text-brand-900 mb-4">Últimos lançamentos</h2><div className="overflow-x-auto"><table className="fleet-data-table"><thead><tr>{['Data','NF','Firma','Motorista','Placa','Frete'].map(label=><th key={label}>{label}</th>)}</tr></thead><tbody>{[...expenses].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5).map(e=><tr key={e.id}><td className="p-3">{displayDate(e.date)}</td><td className="p-3">{e.invoice||'—'}</td><td className="p-3">{e.saleSheet?.company||e.clientName||'—'}</td><td className="p-3">{drivers.find(d=>d.id===e.driverId)?.name||'—'}</td><td className="p-3">{e.licensePlate}</td><td className="p-3 whitespace-nowrap">{currency(e.freightValue)}</td></tr>)}</tbody></table></div>{!expenses.length&&<p className="text-sm text-gray-500">Nenhum lançamento cadastrado.</p>}</section>
     </div>
   );
 };

@@ -34,6 +34,8 @@ const StatCard: React.FC<{ title: string; value: string; icon: React.ReactNode; 
 
 const AdvancedReports: React.FC<AdvancedReportsProps> = ({ expenses, drivers }) => {
     const [selectedDriverId, setSelectedDriverId] = useState<string>('all');
+    const [fleet,setFleet]=useState('all');
+    const [plate,setPlate]=useState('');
     const [startDate, setStartDate] = useState<string>('');
     const [endDate, setEndDate] = useState<string>('');
     const [driverSearchTerm, setDriverSearchTerm] = useState<string>('');
@@ -51,7 +53,7 @@ const AdvancedReports: React.FC<AdvancedReportsProps> = ({ expenses, drivers }) 
     };
     
     const filteredExpenses = useMemo(() => {
-        let expensesToFilter = expenses;
+        let expensesToFilter = expenses.filter(e=>(fleet==='all'||e.type===fleet)&&(!plate||e.licensePlate===plate));
 
         if (selectedDriverId !== 'all') {
             expensesToFilter = expensesToFilter.filter(e => e.driverId === selectedDriverId);
@@ -71,7 +73,7 @@ const AdvancedReports: React.FC<AdvancedReportsProps> = ({ expenses, drivers }) 
         }
 
         return expensesToFilter;
-    }, [expenses, selectedDriverId, startDate, endDate]);
+    }, [expenses, selectedDriverId, startDate, endDate,fleet,plate]);
 
     const overallStats = useMemo(() => {
         // FIX: Ensure all values are treated as numbers to prevent type errors from string concatenation.
@@ -303,7 +305,7 @@ const AdvancedReports: React.FC<AdvancedReportsProps> = ({ expenses, drivers }) 
     );
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-8"><section className="surface"><p className="eyebrow">ANÁLISE DA OPERAÇÃO</p><h2 className="text-2xl font-bold text-brand-900">B.I. — Comparações e resultados</h2><p className="mt-2 text-sm text-gray-500">Compare períodos, motoristas e veículos. Os filtros abaixo afetam todas as análises e a exportação.</p><div className="flex flex-wrap items-end gap-4 mt-4"><label className="text-sm">Frota<select className="sheet-input" value={fleet} onChange={e=>setFleet(e.target.value)}><option value="all">Todas</option><option value="internal">Interna</option><option value="external">Externa</option></select></label><label className="text-sm">Placa<select className="sheet-input" value={plate} onChange={e=>setPlate(e.target.value)}><option value="">Todas</option>{[...new Set(expenses.map(e=>e.licensePlate))].sort().map(value=><option key={value}>{value}</option>)}</select></label><button className="text-sm underline" onClick={()=>{setFleet('all');setPlate('');setSelectedDriverId('all');setStartDate('');setEndDate('');setDriverSearchTerm('');}}>Limpar todos os filtros</button><span className="text-sm text-gray-500">{filteredExpenses.length} de {expenses.length} fichas no filtro</span></div></section>
             <div className="bg-white p-4 rounded-lg shadow-md mb-6 flex justify-between items-center flex-wrap gap-4 no-print">
                 <div className="flex items-center gap-4 flex-wrap">
                     <div className="w-full sm:w-auto min-w-[250px]">
