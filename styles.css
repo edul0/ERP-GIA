@@ -179,3 +179,20 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .app-sidebar .nav-active { background:#215a3f; box-shadow:inset 3px 0 #80bd92; }
 .app-sidebar .sidebar-product { font-size:14px; letter-spacing:.07em; }
 @media (max-width:640px) { .app-main .surface { padding:16px; } .app-shell .app-header { min-height:60px; } .app-shell .app-header h1 { font-size:15px; } .app-main .kpi-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; } .app-main .kpi-grid>div { padding:14px; } .app-main .kpi-grid .text-2xl { font-size:21px; } .app-main .kpi-grid>div .mb-4 { margin-bottom:10px; } .app-main .kpi-grid>div .text-sm { font-size:11px; } .erp-empty { min-height:180px; } }
+/* Ações com dimensões e alinhamento consistentes em todas as áreas. */
+.app-main button:not(.sheet-remove):not([aria-label='Fechar ficha']) { line-height:1.35; }
+.app-main button[class*='px-']:not(.sheet-remove) { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:38px; border-radius:8px; font-size:13px; font-weight:600; white-space:nowrap; }
+.app-main button svg { flex-shrink:0; }
+.app-main button svg[class*='mr-'] { margin-right:0; }
+.app-header button:not([aria-label='Abrir menu']) { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:36px; border-radius:8px; line-height:1.2; }
+.app-header button svg { flex-shrink:0; margin-right:0; }
+.app-main .fleet-actions>div { gap:6px; flex-wrap:nowrap; }
+.app-main .fleet-data-table td { vertical-align:middle; }
+.app-main .fleet-money,.app-main .fleet-numeric { font-variant-numeric:tabular-nums; }
+.sheet-dialog footer { display:flex; align-items:center; gap:10px; padding:16px 0 0; }
+.sheet-dialog footer button { min-height:40px; min-width:100px; padding:10px 15px; border-radius:8px; font-size:13px; font-weight:600; }
+.sheet-dialog footer button:not([type='submit']) { border:1px solid #d6e1da; background:#fff; color:#345845; }
+.sheet-dialog header button { display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:8px; background:#eaf1ed; }
+.sheet-dialog .sheet-section { padding:18px; }
+.sheet-dialog .sheet-section-title { padding-bottom:10px; border-bottom:1px solid #edf1ef; }
+@media(max-width:640px) { .app-main .fleet-actions>div { flex-wrap:wrap; } .sheet-dialog footer { justify-content:stretch; } .sheet-dialog footer button { flex:1; } .app-main button[class*='px-'] { min-height:40px; } }
