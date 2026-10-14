@@ -56,6 +56,17 @@ Deno.serve(async (req: Request) => {
   // A base existente do Marcio passa a ser a base única da empresa, preservando histórico e revisões.
   const owner="company";
   const workspaceId="user:u2";
+  if(action==="audit" && req.method==="GET") {
+   const result=await db.from("gia_audit").select("id,revision,actor_name,entity,entity_id,action,label,occurred_at").eq("workspace_id",workspaceId).order("occurred_at",{ascending:false}).limit(200);if(result.error)throw result.error;return respond(result.data);
+  }
+  if(action==="editing" && req.method==="POST") {
+   if(user.role==="viewer")return respond({error:"Seu perfil permite apenas consulta."},403);
+   const input=await req.json();if(typeof input.id!=="string" || input.id.length>100)return respond({error:"Ficha inválida."},400);
+   if(input.release){const result=await db.from("gia_editing").delete().eq("workspace_id",workspaceId).eq("record_id",input.id).eq("user_id",user.id);if(result.error)throw result.error;return respond({ok:true});}
+   const result=await db.rpc("gia_claim_edit",{p_workspace:workspaceId,p_record:input.id,p_user:user.id});if(result.error)throw result.error;
+   if(!result.data){const lock=await db.from("gia_editing").select("user_id").eq("workspace_id",workspaceId).eq("record_id",input.id).single();const editor=await db.from("gia_users").select("username").eq("id",lock.data?.user_id).maybeSingle();return respond({error:`${editor.data?.username||'Outro funcionário'} está editando esta ficha. Aguarde a conclusão.`},409);}
+   return respond({ok:true});
+  }
   if(action==="data" && req.method==="GET") {
    const current=await db.from("gia_workspaces").select("*").eq("id",workspaceId).maybeSingle(); if(current.error) throw current.error;
    let data=current.data ? {...current.data.data,revision:current.data.revision} : emptyData();
@@ -70,13 +81,15 @@ Deno.serve(async (req: Request) => {
    if((current.data?.revision||0)!==input.revision) return respond({error:"Outra aba salvou alterações. Recarregue a base antes de salvar."},409);
    const baseline=current.data?.data||emptyData();
    const changed=(key:string)=>JSON.stringify(input[key])!==JSON.stringify(baseline[key]);
+   if(changed('maintenance') && !['admin','mechanic'].includes(user.role) && user.username.toLowerCase()!=='marcio')return respond({error:"Somente Marcio, o mecânico ou administrador podem alterar manutenção."},403);
    if(user.role==="mechanic" && ["expenses","drivers","trucks","trackingData"].some(changed)) return respond({error:"Seu perfil permite alterar apenas manutenção."},403);
    const {users,revision,...data}=input;
    const next=revision+1;
    let result;
-   if(current.data) result=await db.from("gia_workspaces").update({data,revision:next,updated_at:new Date().toISOString()}).eq("id",workspaceId).eq("revision",revision).select("revision").maybeSingle();
+   if(current.data) result=await db.from("gia_workspaces").update({data,revision:next,updated_by:user.id,updated_at:new Date().toISOString()}).eq("id",workspaceId).eq("revision",revision).select("revision").maybeSingle();
    else result=await db.from("gia_workspaces").insert({id:workspaceId,data,revision:next}).select("revision").single();
    if(result.error?.code==="23505" || (!result.error && !result.data)) return respond({error:"Outra aba salvou alterações. Recarregue antes de salvar."},409);
+   if(result.error?.code==="P0002")return respond({error:"Outro funcionário está editando uma ficha alterada. Aguarde a conclusão; suas alterações continuam na tela."},409);
    if(result.error) throw result.error;
    return respond({revision:next});
   }

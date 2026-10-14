@@ -1,9 +1,13 @@
+import {csvCell} from '../lib/csv';
 import { localDateKey, displayDate } from '../lib/finance';
+import {currency,sumMoney} from '../lib/finance';
+import {buildReport,reportLogo} from '../lib/report';
 import React, { useState, useMemo } from 'react';
 import { MaintenanceRecord, Truck } from '../types';
 import { Wrench, Calendar, DollarSign, PenTool, CheckCircle, Clock, Pencil, Trash2, Filter, Download } from 'lucide-react';
 
 interface MaintenanceProps {
+  canEdit?: boolean;
   maintenance: MaintenanceRecord[];
   trucks: Truck[];
   onAddMaintenance: (record: Partial<MaintenanceRecord>) => void;
@@ -11,7 +15,7 @@ interface MaintenanceProps {
   onDeleteMaintenance?: (id: string) => void;
 }
 
-export const Maintenance: React.FC<MaintenanceProps> = ({ maintenance, trucks, onAddMaintenance, onUpdateMaintenance, onDeleteMaintenance }) => {
+export const Maintenance: React.FC<MaintenanceProps> = ({ maintenance, trucks, onAddMaintenance, onUpdateMaintenance, onDeleteMaintenance,canEdit=true }) => {
   const [formError, setFormError] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -155,7 +159,7 @@ export const Maintenance: React.FC<MaintenanceProps> = ({ maintenance, trucks, o
         headers.map(header => {
           const val = (row as any)[header] || '';
           // Escape quotes and wrap in quotes to handle commas/semicolons in values
-          return `"${String(val).replace(/"/g, '""')}"`;
+          return csvCell(val);
         }).join(';')
       )
     ].join('\n');
@@ -177,6 +181,7 @@ export const Maintenance: React.FC<MaintenanceProps> = ({ maintenance, trucks, o
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold text-gray-800">Manutenção de Frota</h2>
         <div className="flex gap-2">
+          <button className="sheet-print-button" onClick={async()=>{try{const pdf=buildReport({title:'Manutenção por veículo',subtitle:filterTruck==='all'?'Todos os veículos':trucks.find(t=>t.id===filterTruck)?.plate||'',logo:await reportLogo(),summary:[['Serviços',String(filteredMaintenance.length)],['Pendentes',String(filteredMaintenance.filter(m=>m.status==='pending').length)],['Custo registrado',currency(sumMoney(filteredMaintenance,m=>m.cost))]],columns:['Data','Placa','Descrição','Hodômetro','Custo','Situação'],widths:[25,30,120,35,33,30],rows:filteredMaintenance.map(m=>[displayDate(m.date),trucks.find(t=>t.id===m.truckId)?.plate||'',m.description,m.odometer+' km',currency(m.cost),m.status==='pending'?'Pendente':'Concluído'])});pdf.save('manutencao.pdf');}catch{setFormError('Não foi possível imprimir.');}}}>Imprimir manutenção</button>
           <button 
             onClick={exportToExcel}
             className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white font-bold rounded-lg shadow-md hover:bg-green-700 transition"
@@ -185,6 +190,7 @@ export const Maintenance: React.FC<MaintenanceProps> = ({ maintenance, trucks, o
             Exportar CSV
           </button>
           <button 
+            disabled={!canEdit}
             onClick={() => {
               if (showForm) {
                 setShowForm(false);
@@ -195,7 +201,7 @@ export const Maintenance: React.FC<MaintenanceProps> = ({ maintenance, trucks, o
             }}
             className="px-4 py-2 bg-brand-600 text-white font-bold rounded-lg shadow-md hover:bg-brand-700 transition"
           >
-            {showForm ? 'Cancelar' : 'Nova Ordem de Serviço'}
+            {showForm ? 'Cancelar' : 'Nova manutenção'}
           </button>
         </div>
       </div>
@@ -219,6 +225,8 @@ export const Maintenance: React.FC<MaintenanceProps> = ({ maintenance, trucks, o
               <div className="mt-4">
                 <p className="text-xs text-gray-500">Total Gasto em Manutenção</p>
                 <p className="text-lg font-bold text-brand-600">{totalCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
+                <p className="text-sm mt-2">{filteredMaintenance.filter(m=>m.truckId===truck.id&&m.status==='pending').length} serviço(s) pendente(s)</p>
+                <p className="text-sm text-gray-500">Próxima manutenção: {truck.nextMaintenanceOdometer?truck.nextMaintenanceOdometer.toLocaleString('pt-BR')+' km':'não definida'}{truck.nextMaintenanceOdometer&&truck.lastOdometer>=truck.nextMaintenanceOdometer?' • Revisar agora':''}</p>
               </div>
             </div>
           );
@@ -372,6 +380,7 @@ export const Maintenance: React.FC<MaintenanceProps> = ({ maintenance, trucks, o
                   <td className="p-4 text-right">
                     <div className="flex items-center justify-end gap-2">
                       <button 
+                        disabled={!canEdit}
                         onClick={() => handleEdit(m)}
                         className="p-1.5 text-brand-600 hover:bg-brand-50 rounded-lg transition-colors"
                         title="Editar"
@@ -379,6 +388,7 @@ export const Maintenance: React.FC<MaintenanceProps> = ({ maintenance, trucks, o
                         <Pencil size={18} />
                       </button>
                       <button 
+                        disabled={!canEdit}
                         onClick={() => handleDelete(m.id)}
                         className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                         title="Excluir"

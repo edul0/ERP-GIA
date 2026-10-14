@@ -1,3 +1,7 @@
+import {mergeCompanyData} from './lib/concurrent';
+import CompanyDashboard from './components/CompanyDashboard';
+import SyncStatus from './components/SyncStatus';
+import ActivityHistory from './components/ActivityHistory';
 import { cloudProfile, isDemo, loginCloud, logout } from './services/session';
 import { getWorkspaceOwner, setWorkspaceOwner } from './services/online';
 import { emptyData, type UserData } from './lib/data';
@@ -53,6 +57,7 @@ const App: React.FC = () => {
   const [revision, setRevision] = useState(0);
   const [savedSnapshot, setSavedSnapshot] = useState('');
   const [dataReady, setDataReady] = useState(false);
+  const [lastSaved,setLastSaved]=useState<Date|null>(null);
   const [dataError, setDataError] = useState('');
   const applyData = (data: UserData, role?: Role) => {
     setExpenses(data.expenses);
@@ -62,7 +67,16 @@ const App: React.FC = () => {
     setMaintenance(data.maintenance);
     setTrackingData(data.trackingData);
     setRevision(data.revision); setSavedSnapshot(JSON.stringify([data.expenses, data.drivers, data.users, data.trucks, data.maintenance, data.trackingData]));
-    setDataReady(true); setDataError('');
+    setDataReady(true); setDataError(''); setLastSaved(new Date());
+  };
+  const reconcile=async()=>{
+   setIsLoading(true);
+   try{
+    const [baseExpenses,baseDrivers,baseUsers,baseTrucks,baseMaintenance,baseTracking]=JSON.parse(savedSnapshot);
+    const remote=await fetchUserData(currentUser!);
+    const merged=mergeCompanyData({expenses:baseExpenses,drivers:baseDrivers,users:baseUsers,trucks:baseTrucks,maintenance:baseMaintenance,trackingData:baseTracking,revision},{expenses,drivers,users,trucks,maintenance,trackingData,revision},remote);
+    applyData(remote);setExpenses(merged.expenses);setDrivers(merged.drivers);setTrucks(merged.trucks);setMaintenance(merged.maintenance);setTrackingData(merged.trackingData);showToast('Alterações conciliadas. Aguardando confirmação na nuvem.');
+   }catch(e){setDataError(e instanceof Error?e.message:'Não foi possível conciliar.');}finally{setIsLoading(false);}
   };
   const snapshot = JSON.stringify([expenses, drivers, users, trucks, maintenance, trackingData]);
   const hasUnsavedChanges = dataReady && snapshot !== savedSnapshot;
@@ -138,7 +152,7 @@ const App: React.FC = () => {
         if (!dataReady) throw new Error('A base não foi carregada. Salvamento bloqueado.');
         if (currentUser.role === 'viewer') throw new Error('Seu perfil permite apenas consulta.');
         const nextRevision = await saveUserData({ expenses, drivers, users, trucks, maintenance, trackingData, revision }, currentUser);
-        setRevision(nextRevision); setSavedSnapshot(snapshot); setDataError('');
+        setRevision(nextRevision); setSavedSnapshot(snapshot); setDataError(''); setLastSaved(new Date());
         showToast(isDemo ? 'Dados salvos neste navegador.' : 'Dados confirmados na nuvem.');
     } catch (error) {
         console.error("Failed to save data to cloud:", error);
@@ -357,7 +371,7 @@ const App: React.FC = () => {
       case 'data-management': return <section className="surface space-y-4"><h2 className="text-xl font-bold">Excluir dados</h2><p>Escolha o cadastro e use o botão Excluir no registro desejado.</p><div className="flex gap-3 flex-wrap">{[['motorista-interno','Frota interna'],['motorista-externo','Frota externa'],['fleet','Veículos'],['driver-management','Motoristas']].map(([target,label]) => <button key={target} className="border rounded-lg px-4 py-2" onClick={()=>handleSetView(target as View)}>{label}</button>)}</div></section>;
       case 'fleet': return <VehicleManagement onDelete={id => { assertEdit(['admin','user','finance']); const truck=trucks.find(item=>item.id===id); if(maintenance.some(item=>item.truckId===id)||expenses.some(item=>item.licensePlate.replace(/[^a-z0-9]/gi,'').toUpperCase()===truck?.plate.replace(/[^a-z0-9]/gi,'').toUpperCase())){showToast('Veículo vinculado a ficha ou manutenção. Preserve o histórico antes de excluir.');return;}setTrucks(previous=>previous.filter(item=>item.id!==id)); }} trucks={trucks} canEdit={['admin', 'user', 'finance'].includes(currentUser.role)} onSave={truck => { assertEdit(['admin', 'user', 'finance']); setTrucks(previous => previous.some(item => item.id === truck.id) ? previous.map(item => item.id === truck.id ? truck : item) : [...previous, truck]); }} />;
       case 'dashboard':
-        return <ExecutiveDashboard expenses={expenses} drivers={drivers} trucks={trucks} maintenance={maintenance} />;
+        return <CompanyDashboard expenses={expenses} trucks={trucks} maintenance={maintenance} />;
       case 'dre':
         return <DRE expenses={expenses} />;
       case 'motorista-interno':
@@ -365,7 +379,7 @@ const App: React.FC = () => {
       case 'motorista-externo':
         return <ExpensesList type="external" isAdmin={currentUser?.role === 'admin'} expenses={expenses.filter(e => e.type === 'external')} drivers={drivers} trucks={trucks} onAddExpense={addExpense} onUpdateExpense={updateExpense} onDeleteExpense={deleteExpense} onImportExpenses={addExpensesBatch} showToast={showToast} onBulkUpdate={handleBulkUpdateExpenses} />;
       case 'maintenance':
-        return <Maintenance maintenance={maintenance} trucks={trucks} onAddMaintenance={(m) => (() => { if (!['admin','mechanic'].includes(currentUser.role) && currentUser.username.toLowerCase() !== 'marcio') throw new Error('Seu perfil não permite registrar manutenção.'); const issue = validateMaintenance(m, trucks); if (issue) throw new Error(issue); setMaintenance(prev => [{id: crypto.randomUUID(), ...m} as MaintenanceRecord, ...prev]); })()} onUpdateMaintenance={(m) => (() => { if (!['admin','mechanic'].includes(currentUser.role) && currentUser.username.toLowerCase() !== 'marcio') throw new Error('Seu perfil não permite registrar manutenção.'); const issue = validateMaintenance(m, trucks); if (issue) throw new Error(issue); setMaintenance(prev => prev.map(record => record.id === m.id ? m : record)); })()} onDeleteMaintenance={(id) => setMaintenance(prev => prev.filter(record => record.id !== id))} />;
+        return <Maintenance canEdit={['admin','mechanic'].includes(currentUser.role)||currentUser.username.toLowerCase()==='marcio'} maintenance={maintenance} trucks={trucks} onAddMaintenance={(m) => (() => { if (!['admin','mechanic'].includes(currentUser.role) && currentUser.username.toLowerCase() !== 'marcio') throw new Error('Seu perfil não permite registrar manutenção.'); const issue = validateMaintenance(m, trucks); if (issue) throw new Error(issue); setMaintenance(prev => [{id: crypto.randomUUID(), ...m} as MaintenanceRecord, ...prev]); })()} onUpdateMaintenance={(m) => (() => { if (!['admin','mechanic'].includes(currentUser.role) && currentUser.username.toLowerCase() !== 'marcio') throw new Error('Seu perfil não permite registrar manutenção.'); const issue = validateMaintenance(m, trucks); if (issue) throw new Error(issue); setMaintenance(prev => prev.map(record => record.id === m.id ? m : record)); })()} onDeleteMaintenance={(id) => setMaintenance(prev => prev.filter(record => record.id !== id))} />;
       case 'driver-management':
         return <DriverManagement drivers={drivers} onAddDriver={addDriver} onDeleteDriver={deleteDriver} />;
       case 'advanced-reports':
@@ -388,7 +402,7 @@ const App: React.FC = () => {
         />;
         break;
       default:
-        return <ExecutiveDashboard expenses={expenses} drivers={drivers} trucks={trucks} maintenance={maintenance} />;
+        return <CompanyDashboard expenses={expenses} trucks={trucks} maintenance={maintenance} />;
     }
     return <div className="flex items-center justify-center h-full"><div className="text-center p-10 bg-white rounded-lg shadow-md"><h2 className="text-2xl font-bold text-red-600 mb-2">Acesso Negado</h2><p className="text-gray-600">Você não tem permissão para visualizar esta página.</p></div></div>;
   };
@@ -468,11 +482,12 @@ const App: React.FC = () => {
         
         <main className="app-main flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 bg-gray-50 relative custom-scrollbar flex flex-col">
           <div className="max-w-[1600px] w-full mx-auto flex-1 flex flex-col">
-              <div className="data-status mb-5" role="status"><span>{isDemo ? (currentUser.role === 'admin' ? 'Demonstração do administrador • dados de exemplo' : 'Base local deste usuário • dados salvos neste navegador') : 'Base da empresa • compartilhada e sincronizada'}</span><strong>{hasUnsavedChanges ? 'Alterações não salvas' : dataReady ? 'Sem alterações pendentes' : 'Carregando'}</strong></div>
-              {dataError && dataReady && <div role="alert" className="p-3 mb-4 rounded-lg bg-red-50 text-red-700"><p>{dataError}</p><p className="text-sm">Seus registros continuam na tela. Confira a conexão antes de tentar novamente.</p>{hasUnsavedChanges && <button onClick={handleSaveData} disabled={isLoading} className="underline mt-2">Tentar salvar novamente</button>}</div>}
+              <SyncStatus saving={isLoading} dirty={hasUnsavedChanges} ready={dataReady} error={dataError} lastSaved={lastSaved}/>
+              {dataError && dataReady && <div role="alert" className="p-3 mb-4 rounded-lg bg-red-50 text-red-700"><p>{dataError}</p><p className="text-sm">Seus registros continuam na tela. Confira a conexão antes de tentar novamente.</p>{hasUnsavedChanges && <button onClick={handleSaveData} disabled={isLoading} className="underline mt-2">Tentar salvar novamente</button>}{hasUnsavedChanges&&<button disabled={isLoading} onClick={reconcile} className="underline ml-4">Conciliar alterações de outros funcionários</button>}</div>}
             <ErrorBoundary hasUnsavedChanges={hasUnsavedChanges}>
               <Suspense fallback={<div className="surface">Carregando área...</div>}>{renderView()}</Suspense>
             </ErrorBoundary>
+            <ActivityHistory/>
           </div>
           
           {toastMessage && (

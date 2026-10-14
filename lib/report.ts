@@ -100,14 +100,18 @@ export async function expenseReport(title: string, expenses: Expense[], drivers:
 }
 
 export async function saleSheetReport(expense: Partial<Expense>, driverName: string) {
- const sheet = expense.saleSheet || emptySaleSheet();
- const totals = saleTotals(sheet);
- const day = expense.date ? new Date(`${expense.date}T12:00:00`).toLocaleDateString('pt-BR', { weekday: 'long' }) : '';
- return buildReport({ title: `Ficha de frete — NF ${expense.invoice || ''}`, logo: await reportLogo(),
-  subtitle: `${displayDate(expense.date || '')} (${day}) | Firma: ${sheet.company} | ${sheet.city} / ${sheet.state}\nRoça: ${sheet.farm}`,
-  summary: [['Quantidade total de caixas', String(totals.boxes)], ['Valor total do frete', currency(expense.freightValue || 0)]],
-  columns: ['Descrição', 'Quantidade de caixas'], widths: [210, 63],
-  rows: [['Total de caixas', String(totals.boxes)]],
-  note: `Motorista: ${driverName} | Placa: ${expense.licensePlate || ''}\nFrete por caixa: ${currency(sheet.freightPerBox)} | Seguro: ${currency(expense.seguro || 0)}\nAbastecimento: ${currency(expense.fueling || 0)} | Despesas do motorista: ${currency(expense.driverExpenses || 0)} | Pedágio: ${currency(expense.toll || 0)}\nKm de saída: ${expense.entryOdometer || 0} | Km de chegada: ${expense.exitOdometer || 0} | Km percorridos: ${distanceTraveled(expense)}\nObservação: ${sheet.notes}`
- });
+ const sheet=expense.saleSheet||emptySaleSheet(),totals=saleTotals(sheet),pdf=new jsPDF({unit:'mm',format:'a4'});
+ const logo=await reportLogo();let y=38;const margin=14,width=182;
+ const header=()=>{pdf.setFillColor(11,51,34);pdf.rect(0,0,210,30,'F');if(logo){pdf.setFillColor(255,255,255);pdf.roundedRect(14,6,66,17,2,2,'F');pdf.addImage(logo,'PNG',17,9,60,12);}else{pdf.setFontSize(17);pdf.setTextColor(255);pdf.text('ERP GIA',14,18);}pdf.setTextColor(255);pdf.setFont('helvetica','bold');pdf.setFontSize(13);pdf.text('FICHA DE FRETE',196,13,{align:'right'});pdf.setFontSize(10);pdf.text('NF '+(expense.invoice||'Não informada'),196,21,{align:'right'});y=38;};
+ const ensure=(height:number)=>{if(y+height>276){pdf.addPage();header();}};
+ const section=(title:string)=>{ensure(14);pdf.setFillColor(231,241,233);pdf.rect(margin,y,width,8,'F');pdf.setTextColor(11,51,34);pdf.setFont('helvetica','bold');pdf.setFontSize(10);pdf.text(title,margin+3,y+5.5);y+=11;};
+ const row=(fields:[string,string][])=>{const cell=width/fields.length;pdf.setFont('helvetica','normal');pdf.setFontSize(10);const lines=fields.map(([,v])=>pdf.splitTextToSize(v||'—',cell-8) as string[]);const height=Math.max(...lines.map(a=>a.length))*5+12;ensure(height);fields.forEach(([label],i)=>{const x=margin+i*cell;pdf.setDrawColor(222,232,224);pdf.rect(x,y,cell,height);pdf.setFont('helvetica','normal');pdf.setFontSize(8);pdf.setTextColor(93,113,100);pdf.text(label,x+4,y+5);pdf.setFontSize(10);pdf.setTextColor(28,48,35);pdf.text(lines[i],x+4,y+11);});y+=height;};
+ header();section('Dados da ficha');row([['Data',displayDate(expense.date||'')],['Dia da semana',expense.date?new Date(expense.date+'T12:00:00').toLocaleDateString('pt-BR',{weekday:'long'}):'']]);row([['Firma',sheet.company],['Roça',sheet.farm]]);row([['Cidade',sheet.city],['Estado',sheet.state]]);y+=5;
+ section('Motorista e veículo');row([['Motorista',driverName],['Placa',expense.licensePlate||'']]);y+=5;
+ section('Caixas e frete');row([['Quantidade total de caixas',String(totals.boxes)],['Frete por caixa',currency(sheet.freightPerBox)]]);row([['Valor do seguro',currency(expense.seguro||0)],['Valor total do frete',currency(expense.freightValue||0)]]);y+=5;
+ section('Quilometragem e despesas');row([['Km de saída',String(expense.entryOdometer||0)],['Km de chegada',String(expense.exitOdometer||0)],['Km percorridos',distanceTraveled(expense).toLocaleString('pt-BR')]]);row([['Abastecimento',currency(expense.fueling||0)],['Despesas do motorista',currency(expense.driverExpenses||0)],['Pedágio',currency(expense.toll||0)]]);y+=5;
+ section('Observação');pdf.setFont('helvetica','normal');pdf.setFontSize(10);pdf.setTextColor(28,48,35);const notes=pdf.splitTextToSize(sheet.notes||'—',width-8) as string[];for(const line of notes){ensure(6);pdf.text(line,margin+4,y+4);y+=5;}y+=5;
+ if(expense.attachments?.length){ensure(10);pdf.setFontSize(8);pdf.text('Anexos vinculados: '+expense.attachments.length,margin,y);}
+ for(let page=1;page<=pdf.getNumberOfPages();page++){pdf.setPage(page);pdf.setDrawColor(222,232,224);pdf.line(margin,282,196,282);pdf.setFontSize(8);pdf.setTextColor(93,113,100);pdf.text('Grupo Irmãos Andrade • ERP GIA',margin,288);pdf.text('Página '+page+' de '+pdf.getNumberOfPages(),196,288,{align:'right'});}
+ return pdf;
 }
