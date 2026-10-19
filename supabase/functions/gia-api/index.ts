@@ -1,3 +1,4 @@
+import {canManageMaintenance} from './lib/permissions.ts';
 import { createClient } from "npm:@supabase/supabase-js@2.99.3";
 import { parseData, emptyData } from "./lib/data.ts";
 const db = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
@@ -81,7 +82,7 @@ Deno.serve(async (req: Request) => {
    if((current.data?.revision||0)!==input.revision) return respond({error:"Outra aba salvou alterações. Recarregue a base antes de salvar."},409);
    const baseline=current.data?.data||emptyData();
    const changed=(key:string)=>JSON.stringify(input[key])!==JSON.stringify(baseline[key]);
-   if(changed('maintenance') && !['admin','mechanic'].includes(user.role) && user.username.toLowerCase()!=='marcio')return respond({error:"Somente Marcio, o mecânico ou administrador podem alterar manutenção."},403);
+   if(changed('maintenance') && !canManageMaintenance(user))return respond({error:"Seu perfil não permite alterar manutenção."},403);
    if(user.role==="mechanic" && ["expenses","drivers","trucks","trackingData"].some(changed)) return respond({error:"Seu perfil permite alterar apenas manutenção."},403);
    const {users,revision,...data}=input;
    const next=revision+1;
