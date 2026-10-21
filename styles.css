@@ -196,3 +196,19 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .sheet-dialog .sheet-section { padding:18px; }
 .sheet-dialog .sheet-section-title { padding-bottom:10px; border-bottom:1px solid #edf1ef; }
 @media(max-width:640px) { .app-main .fleet-actions>div { flex-wrap:wrap; } .sheet-dialog footer { justify-content:stretch; } .sheet-dialog footer button { flex:1; } .app-main button[class*='px-'] { min-height:40px; } }
+.company-picker { position:relative; align-content:start; }
+.company-picker-control { position:relative; display:flex; align-items:center; }
+.company-picker-control>svg:first-child { position:absolute; left:12px; color:#6b8b78; pointer-events:none; }
+.company-picker-control>svg:last-child { position:absolute; right:12px; color:#82998a; pointer-events:none; }
+.app-main .company-picker .company-picker-control input.sheet-input { padding-left:38px; padding-right:34px; }
+.company-picker-panel { position:absolute; top:calc(100% + 6px); left:0; right:0; z-index:60; background:#fff; border:1px solid #d8e5dc; border-radius:12px; box-shadow:0 12px 30px #123b211c; overflow:hidden; }
+.company-picker-heading { display:flex; justify-content:space-between; gap:10px; padding:12px 14px; background:#f6f9f7; border-bottom:1px solid #eaf0ec; font-size:10px; color:#6a8273; font-weight:600; }
+.company-picker-heading>span:first-child { display:flex; align-items:center; gap:7px; }
+.company-picker-list { max-height:220px; overflow:auto; padding:5px; }
+.company-picker-option { width:100%; display:flex; align-items:center; gap:10px; min-height:44px; padding:8px 10px; border:0; background:#fff; border-radius:7px; color:#244733; text-align:left; font-size:13px; font-weight:500; }
+.company-picker-option>span:nth-child(2) { flex:1; overflow-wrap:anywhere; }
+.company-picker-option:hover,.company-picker-option.is-active { background:#edf6f0; }
+.company-picker-avatar { display:flex; align-items:center; justify-content:center; width:29px; height:29px; flex-shrink:0; background:#edf3ef; color:#538367; border:1px solid #e1ebe4; border-radius:7px; font-size:10px; font-weight:700; }
+.company-picker-create { color:#1b7045; border-top:1px solid #edf1ef; }
+.company-picker-note { margin:0; padding:10px 14px; border-top:1px solid #edf1ef; color:#87988d; font-size:10px; font-weight:400; line-height:1.5; }
+.company-picker-empty { padding:16px 10px; font-size:12px; font-weight:400; color:#82978a; }
