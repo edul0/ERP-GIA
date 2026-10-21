@@ -1,3 +1,4 @@
+import {companyNames} from './lib/companyNames';
 import {canManageMaintenance} from './lib/permissions';
 import {mergeCompanyData} from './lib/concurrent';
 import SyncStatus from './components/SyncStatus';
@@ -375,9 +376,9 @@ const App: React.FC = () => {
       case 'dre':
         return <DRE expenses={expenses} />;
       case 'motorista-interno':
-        return <ExpensesList type="internal" isAdmin={currentUser?.role === 'admin'} expenses={expenses.filter(e => e.type === 'internal')} drivers={drivers} trucks={trucks} onAddExpense={addExpense} onUpdateExpense={updateExpense} onDeleteExpense={deleteExpense} onImportExpenses={addExpensesBatch} showToast={showToast} onBulkUpdate={handleBulkUpdateExpenses} />;
+        return <ExpensesList companyNames={companyNames(expenses)} type="internal" isAdmin={currentUser?.role === 'admin'} expenses={expenses.filter(e => e.type === 'internal')} drivers={drivers} trucks={trucks} onAddExpense={addExpense} onUpdateExpense={updateExpense} onDeleteExpense={deleteExpense} onImportExpenses={addExpensesBatch} showToast={showToast} onBulkUpdate={handleBulkUpdateExpenses} />;
       case 'motorista-externo':
-        return <ExpensesList type="external" isAdmin={currentUser?.role === 'admin'} expenses={expenses.filter(e => e.type === 'external')} drivers={drivers} trucks={trucks} onAddExpense={addExpense} onUpdateExpense={updateExpense} onDeleteExpense={deleteExpense} onImportExpenses={addExpensesBatch} showToast={showToast} onBulkUpdate={handleBulkUpdateExpenses} />;
+        return <ExpensesList companyNames={companyNames(expenses)} type="external" isAdmin={currentUser?.role === 'admin'} expenses={expenses.filter(e => e.type === 'external')} drivers={drivers} trucks={trucks} onAddExpense={addExpense} onUpdateExpense={updateExpense} onDeleteExpense={deleteExpense} onImportExpenses={addExpensesBatch} showToast={showToast} onBulkUpdate={handleBulkUpdateExpenses} />;
       case 'maintenance':
         return <Maintenance canEdit={canManageMaintenance(currentUser)} maintenance={maintenance} trucks={trucks} onAddMaintenance={(m) => (() => { if (!canManageMaintenance(currentUser)) throw new Error('Seu perfil não permite registrar manutenção.'); const issue = validateMaintenance(m, trucks); if (issue) throw new Error(issue); setMaintenance(prev => [{id: crypto.randomUUID(), ...m} as MaintenanceRecord, ...prev]); })()} onUpdateMaintenance={(m) => (() => { if (!canManageMaintenance(currentUser)) throw new Error('Seu perfil não permite registrar manutenção.'); const issue = validateMaintenance(m, trucks); if (issue) throw new Error(issue); setMaintenance(prev => prev.map(record => record.id === m.id ? m : record)); })()} onDeleteMaintenance={(id) => { if(!canManageMaintenance(currentUser))throw new Error('Seu perfil não permite excluir manutenção.'); setMaintenance(prev => prev.filter(record => record.id !== id)); }} />;
       case 'driver-management':
