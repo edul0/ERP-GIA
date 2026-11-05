@@ -80,8 +80,8 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, busy }) => {
         <div className="login-page">
             <section className="login-story" aria-label="Grupo Irmãos Andrade">
                 <img className="login-company-logo" src="/logo-irmaos-andrade.png" alt="Grupo Irmãos Andrade" />
-                <div><span className="login-kicker">ERP GIA</span><h1>Uma gestão forte.<br />Em cada caminho.</h1><p>Controle sua frota, acompanhe despesas e tenha uma visão clara da sua operação.</p></div>
-                <div className="login-features"><span>01 &nbsp; Frota</span><span>02 &nbsp; Financeiro</span><span>03 &nbsp; Manutenção</span></div>
+                <div><span className="login-kicker">ERP GIA</span><h1>Gestão de frota,<br />sem complicação.</h1><p>Registre viagens, acompanhe custos e mantenha sua operação organizada em um só lugar.</p></div>
+                <div className="login-features"><span>01 &nbsp; Viagens</span><span>02 &nbsp; Custos</span><span>03 &nbsp; Manutenção</span></div>
             </section>
             <div className="login-card w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-xl">
                 <div className="flex flex-col items-center">
