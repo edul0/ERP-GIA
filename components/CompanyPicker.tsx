@@ -1,6 +1,6 @@
 import {useId,useRef,useState,useEffect} from 'react';
 import {Building2,Check,ChevronDown,Plus,Search} from 'lucide-react';
-export default function CompanyPicker({value,names,onChange}:{value:string;names:string[];onChange:(value:string)=>void}){
+export default function CompanyPicker({value,names,onChange,onSelect}:{value:string;names:string[];onChange:(value:string)=>void;onSelect?:(value:string)=>void}){
  const id=useId(),[open,setOpen]=useState(false),[active,setActive]=useState(-1);
  const root=useRef<HTMLDivElement>(null),activeOption=useRef<HTMLButtonElement>(null);
  const normalize=(text:string)=>text.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
@@ -8,7 +8,7 @@ export default function CompanyPicker({value,names,onChange}:{value:string;names
  const matches=names.filter(name=>normalize(name).includes(query));
  const isNew=!!query&&!names.some(name=>normalize(name)===query);
  const options=[...matches,...(isNew?[value.trim()]:[])];
- const choose=(name:string)=>{onChange(name);setOpen(false);setActive(-1);};
+ const choose=(name:string)=>{onChange(name);onSelect?.(name);setOpen(false);setActive(-1);};
  useEffect(()=>{activeOption.current?.scrollIntoView({block:'nearest'});},[active]);
  return <div className="company-picker sheet-field" ref={root} onBlur={e=>{if(!e.currentTarget.contains(e.relatedTarget as Node)){setOpen(false);setActive(-1);}}}>
   <label htmlFor={id}>Firma</label>
