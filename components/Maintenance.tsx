@@ -5,6 +5,8 @@ import {buildReport,reportLogo} from '../lib/report';
 import React, { useState, useMemo } from 'react';
 import { MaintenanceRecord, Truck } from '../types';
 import { Wrench, Calendar, DollarSign, PenTool, CheckCircle, Clock, Pencil, Trash2, Filter, Download } from 'lucide-react';
+import { DecimalInput } from './DecimalInput';
+import { parseDecimal } from '../lib/numbers';
 
 interface MaintenanceProps {
   canEdit?: boolean;
@@ -41,14 +43,14 @@ export const Maintenance: React.FC<MaintenanceProps> = ({ maintenance, trucks, o
       onUpdateMaintenance({
         id: editingId,
         ...formData,
-        cost: parseFloat(formData.cost as string) || 0,
-        odometer: parseInt(formData.odometer as string) || 0
+        cost: parseDecimal(formData.cost as string) || 0,
+        odometer: parseDecimal(formData.odometer as string) || 0
       } as MaintenanceRecord);
     } else {
       onAddMaintenance({
         ...formData,
-        cost: parseFloat(formData.cost as string) || 0,
-        odometer: parseInt(formData.odometer as string) || 0
+        cost: parseDecimal(formData.cost as string) || 0,
+        odometer: parseDecimal(formData.odometer as string) || 0
       });
     }
     } catch (error) { setFormError(error instanceof Error ? error.message : 'Não foi possível salvar.'); return; }
@@ -280,19 +282,19 @@ export const Maintenance: React.FC<MaintenanceProps> = ({ maintenance, trucks, o
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Custo (R$)</label>
-            <input 
-              type="number" min="0"
+            <DecimalInput
+              min="0"
               value={formData.cost}
-              onChange={e => setFormData({...formData, cost: e.target.value})}
+              onValueChange={value => setFormData({...formData, cost: String(value)})}
               className="w-full p-2 border rounded-md"
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Hodômetro (km)</label>
-            <input 
-              type="number"
+            <DecimalInput
+              min="0"
               value={formData.odometer}
-              onChange={e => setFormData({...formData, odometer: e.target.value})}
+              onValueChange={value => setFormData({...formData, odometer: String(value)})}
               className="w-full p-2 border rounded-md"
             />
           </div>

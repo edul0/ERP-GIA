@@ -4,6 +4,8 @@ import type { Expense } from '../types';
 import { Download, Printer } from 'lucide-react';
 import { costFields, costLabels, currency, inPeriod, localDateKey, Period, sumMoney, tripCosts } from '../lib/finance';
 import { downloadCSV } from '../lib/csv';
+import { DecimalInput } from './DecimalInput';
+import { parseDecimal } from '../lib/numbers';
 
 export const DRE: React.FC<{ expenses: Expense[] }> = ({ expenses }) => {
   const [period, setPeriod] = useState<Period>('all');
@@ -12,7 +14,7 @@ export const DRE: React.FC<{ expenses: Expense[] }> = ({ expenses }) => {
   const filtered = expenses.filter(expense => inPeriod(expense.date, period, reference));
   const revenue = sumMoney(filtered, expense => expense.freightValue);
   const costs = sumMoney(filtered, tripCosts);
-  const rate = Number(taxRate);
+  const rate = parseDecimal(taxRate) ?? NaN;
   const hasTax = taxRate.trim() !== '' && Number.isFinite(rate) && rate >= 0 && rate <= 100;
   const taxes = hasTax ? Math.round(revenue * rate) / 100 : 0;
   const balance = Math.round((revenue - costs - taxes) * 100) / 100;
@@ -42,7 +44,7 @@ export const DRE: React.FC<{ expenses: Expense[] }> = ({ expenses }) => {
     <div className="surface flex flex-wrap gap-4 items-end">
       <label className="field-label">Período<select value={period} onChange={e => setPeriod(e.target.value as Period)}><option value="all">Todo o histórico</option><option value="daily">Diário</option><option value="weekly">Últimos 7 dias</option><option value="monthly">Mensal</option></select></label>
       {period !== 'all' && <label className="field-label">Data de referência<input type="date" value={reference} onChange={e => setReference(e.target.value)} /></label>}
-      <label className="field-label">Tributos estimados (%)<input aria-label="Tributos estimados (%)" type="number" min="0" max="100" step="0.01" value={taxRate} placeholder="Não informado" onChange={e => setTaxRate(e.target.value)} /></label>
+      <label className="field-label">Tributos estimados (%)<DecimalInput aria-label="Tributos estimados (%)" min="0" max="100" value={taxRate} placeholder="Não informado" onValueChange={value => setTaxRate(String(value))} /></label>
       <p className="text-xs text-gray-500 pb-3">{filtered.length} lançamento(s) no período</p>
     </div>
     {taxRate !== '' && !hasTax && <p role="alert" className="text-red-700">Informe uma alíquota entre 0 e 100%.</p>}
